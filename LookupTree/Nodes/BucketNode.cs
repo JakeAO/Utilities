@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using Context;
-using LookupTree.Payloads;
+using SadPumpkin.Util.Context;
+using SadPumpkin.Util.LookupTree.Payloads;
 
-namespace LookupTree.Nodes
+namespace SadPumpkin.Util.LookupTree.Nodes
 {
     public class BucketNode<T, U> : INode<T> where T : class, IPayload
     {

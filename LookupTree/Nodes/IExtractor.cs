@@ -1,7 +1,7 @@
 using System;
-using Context;
+using SadPumpkin.Util.Context;
 
-namespace LookupTree.Nodes
+namespace SadPumpkin.Util.LookupTree.Nodes
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class EnumTypeAttribute : Attribute

@@ -1,6 +1,7 @@
 using NUnit.Framework;
+using SadPumpkin.Util.FilteringUtility;
 
-namespace FilteringUtility.Tests
+namespace Tests
 {
     [TestFixture]
     public class FilterTests

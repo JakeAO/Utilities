@@ -1,4 +1,4 @@
-﻿namespace LookupTree.Utils
+﻿namespace SadPumpkin.Util.LookupTree.Utils
 {
     public interface ITreeDataSetPattern
     {

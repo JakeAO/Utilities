@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using NUnit.Framework;
+using SadPumpkin.Util.Context;
 
-namespace Context.Tests
+namespace Tests
 {
     [TestFixture]
     public class ContextTests

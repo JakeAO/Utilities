@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using Context;
-using LookupTree.Nodes;
-using LookupTree.Payloads;
+using SadPumpkin.Util.Context;
+using SadPumpkin.Util.LookupTree.Nodes;
+using SadPumpkin.Util.LookupTree.Payloads;
 
-namespace LookupTree
+namespace SadPumpkin.Util.LookupTree
 {
     public class LookupTree<T> where T : class, IPayload
     {

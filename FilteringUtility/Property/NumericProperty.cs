@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FilteringUtility.Property
+namespace SadPumpkin.Util.FilteringUtility.Property
 {
     public class NumericProperty<T> : IProperty where T : struct, IComparable, IComparable<T>, IEquatable<T>, IFormattable
     {

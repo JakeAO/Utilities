@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using FilteringUtility.Property;
 using NUnit.Framework;
+using SadPumpkin.Util.FilteringUtility;
+using SadPumpkin.Util.FilteringUtility.Property;
 
-namespace FilteringUtility.Tests
+namespace Tests
 {
     [TestFixture]
     public class HelperTests

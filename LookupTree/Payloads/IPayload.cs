@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace LookupTree.Payloads
+namespace SadPumpkin.Util.LookupTree.Payloads
 {
     public interface IPayload
     {

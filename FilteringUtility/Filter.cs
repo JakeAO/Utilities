@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FilteringUtility
+namespace SadPumpkin.Util.FilteringUtility
 {
     public readonly struct Filter
     {

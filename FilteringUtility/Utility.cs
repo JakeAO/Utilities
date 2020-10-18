@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using FilteringUtility.Property;
+using SadPumpkin.Util.FilteringUtility.Property;
 
-namespace FilteringUtility
+namespace SadPumpkin.Util.FilteringUtility
 {
     public class Utility<T, U>
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FilteringUtility.Property
+namespace SadPumpkin.Util.FilteringUtility.Property
 {
     public class EnumProperty<T> : IProperty where T : Enum
     {

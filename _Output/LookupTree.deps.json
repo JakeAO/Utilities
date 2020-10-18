@@ -8,8 +8,8 @@
     ".NETCoreApp,Version=v3.1": {
       "LookupTree/1.0.0": {
         "dependencies": {
-          "Context": "1.0.0",
-          "Newtonsoft.Json": "12.0.3"
+          "Newtonsoft.Json": "12.0.3",
+          "sadpumpkin.context": "1.0.0"
         },
         "runtime": {
           "LookupTree.dll": {}
@@ -23,7 +23,7 @@
           }
         }
       },
-      "Context/1.0.0": {
+      "sadpumpkin.context/1.0.0": {
         "runtime": {
           "Context.dll": {}
         }
@@ -43,7 +43,7 @@
       "path": "newtonsoft.json/12.0.3",
       "hashPath": "newtonsoft.json.12.0.3.nupkg.sha512"
     },
-    "Context/1.0.0": {
+    "sadpumpkin.context/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

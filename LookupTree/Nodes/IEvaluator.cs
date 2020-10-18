@@ -1,6 +1,6 @@
-﻿using Context;
+﻿using SadPumpkin.Util.Context;
 
-namespace LookupTree.Nodes
+namespace SadPumpkin.Util.LookupTree.Nodes
 {
     public interface IEvaluator
     {

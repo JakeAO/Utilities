@@ -1,7 +1,7 @@
 using System;
-using LookupTree.Payloads;
+using SadPumpkin.Util.LookupTree.Payloads;
 
-namespace LookupTree.Utils
+namespace SadPumpkin.Util.LookupTree.Utils
 {
     public static class Utils
     {

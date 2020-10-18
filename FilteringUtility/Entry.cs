@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using FilteringUtility.Property;
+using System.Linq;
+using SadPumpkin.Util.FilteringUtility.Property;
 
-namespace FilteringUtility
+namespace SadPumpkin.Util.FilteringUtility
 {
     public readonly struct Entry<U>
     {

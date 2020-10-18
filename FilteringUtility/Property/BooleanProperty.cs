@@ -1,4 +1,4 @@
-﻿namespace FilteringUtility.Property
+﻿namespace SadPumpkin.Util.FilteringUtility.Property
 {
     public class BooleanProperty : IProperty
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Context
+namespace SadPumpkin.Util.Context
 {
     public class Context : IContext
     {
@@ -10,17 +10,21 @@ namespace Context
         private readonly IContext _baseContext = null;
         private readonly Dictionary<Type, Dictionary<string, object>> _data = new Dictionary<Type, Dictionary<string, object>>();
 
-        public Context(IContext baseContext = null)
+        public Context(IContext baseContext = null, params (string key, object val)[] initialData)
         {
             _baseContext = baseContext;
+            foreach ((string key, object val) in initialData)
+            {
+                Set(val, key);
+            }
         }
 
-        public T Get<T>(string key = null)
+        public T Get<T>(string key = NIL)
         {
             return TryGet(out T value, key) ? value : default;
         }
 
-        public bool TryGet<T>(out T value, string key = null)
+        public bool TryGet<T>(out T value, string key = NIL)
         {
             value = default;
 
@@ -45,7 +49,7 @@ namespace Context
             return false;
         }
 
-        public void Set<T>(T value, string key = null)
+        public void Set<T>(T value, string key = NIL, bool overwrite = true)
         {
             if (EqualityComparer<T>.Default.Equals(value, default))
                 return;
@@ -55,6 +59,9 @@ namespace Context
 
             if (!_data.TryGetValue(typeof(T), out var keyDict))
                 _data[typeof(T)] = keyDict = new Dictionary<string, object>();
+
+            if (!overwrite && keyDict.TryGetValue(key, out var testValue) && testValue != default)
+                return;
 
             keyDict[key] = value;
         }
