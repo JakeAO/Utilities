@@ -6,6 +6,7 @@ namespace SadPumpkin.Util.CombatEngine.StatMap
     public class StatMapIncrementor : IStatMapIncrementor
     {
         public const uint DEFAULT_TOTAL = 12;
+        public const uint DEFAULT_TOTAL_MONSTER = 6;
         public const uint DEFAULT_MIN = 0;
 
         private const uint HP_INCREASE_PER_CON = 10;

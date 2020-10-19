@@ -7,7 +7,7 @@ using SadPumpkin.Util.CombatEngine.Item.Weapons;
 
 namespace SadPumpkin.Util.CombatEngine.EquipMap
 {
-    public interface IEquipMap
+    public interface IEquipMap : ICopyable<IEquipMap>
     {
         IWeapon Weapon { get; }
         IArmor Armor { get; }

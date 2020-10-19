@@ -49,5 +49,16 @@ namespace SadPumpkin.Util.CombatEngine.Actor
             allActions.InsertRange(0, Equipment.GetAllActions(this, possibleTargets));
             return allActions;
         }
+
+        public override IInitiativeActor Copy()
+        {
+            return new PlayerCharacter(
+                Id,
+                Party,
+                Name,
+                Class as IPlayerClass,
+                Stats.Copy(),
+                Equipment.Copy());
+        }
     }
 }

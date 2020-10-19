@@ -12,5 +12,12 @@ namespace SadPumpkin.Util.CombatEngine
             Entity = entity;
             Initiative = init;
         }
+
+        public IInitiativePair Copy()
+        {
+            return new InitiativePair(
+                Entity.Copy(),
+                Initiative);
+        }
     }
 }

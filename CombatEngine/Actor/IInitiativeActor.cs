@@ -3,7 +3,7 @@ using SadPumpkin.Util.CombatEngine.Action;
 
 namespace SadPumpkin.Util.CombatEngine.Actor
 {
-    public interface IInitiativeActor
+    public interface IInitiativeActor : ICopyable<IInitiativeActor>
     {
         uint Id { get; }
         uint Party { get; }

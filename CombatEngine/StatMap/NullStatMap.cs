@@ -14,5 +14,10 @@
         public void ModifyStat(StatType statType, int change)
         {
         }
+
+        public IStatMap Copy()
+        {
+            return Instance;
+        }
     }
 }

@@ -27,6 +27,14 @@ namespace SadPumpkin.Util.CombatEngine.StatMap
         {
         }
 
+        public StatMap(uint[] startingStats)
+        {
+            for (int i = 0; i < Stats.Length; i++)
+            {
+                Stats[i] = startingStats[i];
+            }
+        }
+
         public StatMap(IReadOnlyDictionary<StatType, uint> startingStats)
         {
             foreach (var enumValue in Enum.GetValues(typeof(StatType)))
@@ -77,6 +85,11 @@ namespace SadPumpkin.Util.CombatEngine.StatMap
             }
 
             Stats[(int) statType] = currentValue;
+        }
+
+        public IStatMap Copy()
+        {
+            return new StatMap(Stats);
         }
     }
 }

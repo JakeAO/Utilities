@@ -23,5 +23,10 @@ namespace SadPumpkin.Util.CombatEngine.EquipMap
         public IItem this[EquipmentSlot slot] => null;
 
         public IReadOnlyCollection<IAction> GetAllActions(ICharacterActor activeChar, IReadOnlyCollection<ITargetableActor> possibleTargets) => new IAction[0];
+        
+        public IEquipMap Copy()
+        {
+            return Instance;
+        }
     }
 }

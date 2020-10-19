@@ -80,5 +80,15 @@ namespace SadPumpkin.Util.CombatEngine.Actor
 
             return actions;
         }
+
+        public virtual IInitiativeActor Copy()
+        {
+            return new Character(
+                Id,
+                Party,
+                Name,
+                Class,
+                Stats.Copy());
+        }
     }
 }

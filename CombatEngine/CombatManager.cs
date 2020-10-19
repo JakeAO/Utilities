@@ -22,13 +22,13 @@ namespace SadPumpkin.Util.CombatEngine
 
         private readonly List<IParty> _parties = new List<IParty>(2);
         private readonly List<ITargetableActor> _allTargets = new List<ITargetableActor>(10);
-        private readonly List<InitiativePair> _actorInitiativeList = new List<InitiativePair>(10);
         private readonly Dictionary<uint, ICharacterController> _controllerByPartyId = new Dictionary<uint, ICharacterController>(2);
 
+        private GameState.GameState _previousGameState = null;
         private GameState.GameState _currentGameState = null;
-        private CombatState _state = CombatState.Invalid;
-        private uint? _pendingSelectedActionId = null;
         
+        private uint? _pendingSelectedActionId = null;
+
         public IGameState CurrentGameState => _currentGameState;
         public uint? WinningPartyId { get; private set; }
 
@@ -39,6 +39,8 @@ namespace SadPumpkin.Util.CombatEngine
         {
             GameStateUpdated = gameStateUpdatedSignal ?? new GameStateUpdated();
             CombatComplete = combatCompleteSignal ?? new CombatComplete();
+
+            _currentGameState = new GameState.GameState(GameState.GameState.NextId, CombatState.Invalid, null, new List<IInitiativePair>(10));
             
             _parties.AddRange(parties);
             foreach (IParty party in parties)
@@ -49,23 +51,20 @@ namespace SadPumpkin.Util.CombatEngine
                     if (actor is ITargetableActor targetableActor)
                         _allTargets.Add(targetableActor);
 
-                    _actorInitiativeList.Add(new InitiativePair(actor, (float) RANDOM.NextDouble() * 90f));
+                    _currentGameState.RawInitiativeOrder.Add(new InitiativePair(actor, (float) RANDOM.NextDouble() * 90f));
                 }
             }
 
-            _state = CombatState.Invalid;
-            UpdateCurrentGameState(null);
+            SendOutgoingGameState();
 
             Task.Run(CombatThread);
         }
 
         private void CombatThread()
         {
-            IReadOnlyList<IStateChangeEvent> stateChangeEvents = null;
-
             WinningPartyId = null;
-            _state = CombatState.Active;
-
+            _currentGameState.State = CombatState.Active;
+            
             uint winningParty = 0u;
             while (!GetWinningPartyId(out winningParty))
             {
@@ -74,8 +73,13 @@ namespace SadPumpkin.Util.CombatEngine
                 IInitiativeActor activeEntity = activeInitPair.Entity;
 
                 // Update GameState with ActiveEntity
-                stateChangeEvents = UpdateCurrentGameState(activeEntity);
-                GameStateUpdated.Fire(_currentGameState, stateChangeEvents);
+                _previousGameState = (GameState.GameState) _currentGameState.Copy();
+                _currentGameState.ActiveActor = activeEntity;
+                _currentGameState.Id = GameState.GameState.NextId;
+                SendOutgoingGameState();
+
+                _previousGameState = (GameState.GameState) _currentGameState.Copy();
+                _currentGameState.Id = GameState.GameState.NextId;
 
                 // Prompt Action
                 if (activeEntity.IsAlive())
@@ -109,35 +113,40 @@ namespace SadPumpkin.Util.CombatEngine
 
                     selectedAction.Ability.Cost.Pay(selectedAction.Source);
                     selectedAction.Ability.Effect.Apply(selectedAction.Source, selectedAction.Targets);
-
-                    // Update GameState with Effects of Action
-                    stateChangeEvents = UpdateCurrentGameState(null);
-                    GameStateUpdated.Fire(_currentGameState, stateChangeEvents);
                 }
                 else
                 {
                     activeInitPair.Initiative -= 100;
                 }
 
+                // Update GameState with Effects of Action
+                _currentGameState.ActiveActor = null;
+                SendOutgoingGameState();
+
                 // Rest for a bit
                 Thread.Sleep(1000);
             }
 
-            _state = CombatState.Completed;
+            _previousGameState = (GameState.GameState) _currentGameState.Copy();
+            _currentGameState.Id = GameState.GameState.NextId;
+            _currentGameState.State = CombatState.Completed;
+
             WinningPartyId = winningParty;
-            
-            stateChangeEvents = UpdateCurrentGameState(null);
-            GameStateUpdated.Fire(_currentGameState, stateChangeEvents);
-            
+            SendOutgoingGameState();
+
             CombatComplete.Fire(winningParty);
         }
 
-        private IReadOnlyList<IStateChangeEvent> UpdateCurrentGameState(IInitiativeActor activeEntity)
+        private void SendOutgoingGameState()
         {
-            IGameState previousGameState = _currentGameState;
-            _currentGameState = new GameState.GameState(_state, activeEntity, _actorInitiativeList);
+            List<IStateChangeEvent> changeEvents = new List<IStateChangeEvent>(10);
 
-            return GetDiffGameStateChanges(previousGameState, _currentGameState);
+            if (_previousGameState != null)
+            {
+                changeEvents.AddRange(GetDiffGameStateChanges(_previousGameState, _currentGameState));
+            }
+
+            GameStateUpdated.Fire(_currentGameState.Copy(), changeEvents);
         }
 
         private IReadOnlyList<IStateChangeEvent> GetDiffGameStateChanges(IGameState oldState, IGameState newState)
@@ -226,7 +235,7 @@ namespace SadPumpkin.Util.CombatEngine
         {
             winningParty = 0u;
 
-            foreach (InitiativePair initPair in _actorInitiativeList)
+            foreach (IInitiativePair initPair in _currentGameState.RawInitiativeOrder)
             {
                 IInitiativeActor actor = initPair.Entity;
                 if (actor == null)
@@ -249,22 +258,25 @@ namespace SadPumpkin.Util.CombatEngine
 
         private void IncrementInitiative()
         {
-            foreach (InitiativePair tuple in _actorInitiativeList)
+            foreach (IInitiativePair tuple in _currentGameState.RawInitiativeOrder)
             {
-                tuple.Initiative += tuple.Entity.GetInitiative();
+                if (tuple is InitiativePair mutableTuple)
+                {
+                    mutableTuple.Initiative += tuple.Entity.GetInitiative();
+                }
             }
 
-            _actorInitiativeList.Sort((lhs, rhs) => rhs.Initiative.CompareTo(lhs.Initiative));
+            _currentGameState.RawInitiativeOrder.Sort((lhs, rhs) => rhs.Initiative.CompareTo(lhs.Initiative));
         }
 
         private InitiativePair GetNextEntity()
         {
-            while (_actorInitiativeList[0].Initiative < 100f)
+            while (_currentGameState.InitiativeOrder[0].Initiative < 100f)
             {
                 IncrementInitiative();
             }
 
-            return _actorInitiativeList[0];
+            return _currentGameState.InitiativeOrder[0] as InitiativePair;
         }
 
         private void OnActionSelected(uint actionId)

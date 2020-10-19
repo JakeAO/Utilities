@@ -1,6 +1,6 @@
 ﻿namespace SadPumpkin.Util.CombatEngine.StatMap
 {
-    public interface IStatMap
+    public interface IStatMap : ICopyable<IStatMap>
     {
         uint this[StatType statType] { get; }
         

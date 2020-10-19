@@ -3,7 +3,7 @@ using SadPumpkin.Util.CombatEngine.Actor;
 
 namespace SadPumpkin.Util.CombatEngine.GameState
 {
-    public interface IGameState
+    public interface IGameState : ICopyable<IGameState>
     {
         uint Id { get; }
         CombatState State { get; }

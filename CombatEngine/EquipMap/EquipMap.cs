@@ -72,5 +72,14 @@ namespace SadPumpkin.Util.CombatEngine.EquipMap
 
             return allActions;
         }
+
+        public IEquipMap Copy()
+        {
+            return new EquipMap(
+                Weapon,
+                Armor,
+                ItemA,
+                ItemB);
+        }
     }
 }
