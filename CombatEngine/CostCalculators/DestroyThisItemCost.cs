@@ -75,5 +75,10 @@ namespace SadPumpkin.Util.CombatEngine.CostCalculators
                 }
             }
         }
+
+        public string Description()
+        {
+            return "Consumes Item";
+        }
     }
 }

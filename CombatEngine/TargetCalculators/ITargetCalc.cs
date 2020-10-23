@@ -5,6 +5,7 @@ namespace SadPumpkin.Util.CombatEngine.TargetCalculators
 {
     public interface ITargetCalc
     {
+        string Description { get; }
         bool CanTarget(ICharacterActor sourceCharacter, ICharacterActor targetCharacter);
         IReadOnlyCollection<IReadOnlyCollection<ICharacterActor>> GetTargetOptions(ICharacterActor sourceCharacter, IReadOnlyCollection<ITargetableActor> possibleTargets);
     }

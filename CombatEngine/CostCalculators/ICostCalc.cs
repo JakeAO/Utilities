@@ -6,5 +6,6 @@ namespace SadPumpkin.Util.CombatEngine.CostCalculators
     {
         bool CanAfford(IInitiativeActor entity);
         void Pay(IInitiativeActor entity);
+        string Description();
     }
 }

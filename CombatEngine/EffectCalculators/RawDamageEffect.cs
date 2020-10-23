@@ -8,10 +8,13 @@ namespace SadPumpkin.Util.CombatEngine.EffectCalculators
     public class RawDamageEffect : IEffectCalc
     {
         public Func<ICharacterActor, uint> DamageCalculation { get; }
+        
+        public string Description { get; }
 
-        public RawDamageEffect(Func<ICharacterActor, uint> damageCalculation)
+        public RawDamageEffect(Func<ICharacterActor, uint> damageCalculation, string description)
         {
             DamageCalculation = damageCalculation;
+            Description = description;
         }
 
         public void Apply(IInitiativeActor sourceEntity, IReadOnlyCollection<ICharacterActor> targetCharacters)

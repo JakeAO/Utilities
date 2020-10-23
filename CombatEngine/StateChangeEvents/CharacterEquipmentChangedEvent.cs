@@ -1,24 +1,26 @@
-﻿using SadPumpkin.Util.CombatEngine.EquipMap;
+﻿using SadPumpkin.Util.CombatEngine.Actor;
+using SadPumpkin.Util.CombatEngine.EquipMap;
+using SadPumpkin.Util.CombatEngine.Item;
 
 namespace SadPumpkin.Util.CombatEngine.StateChangeEvents
 {
-    public class CharacterEquipmentChangedEvent : ActorChangeEventBase
+    public class CharacterEquipmentChangedEvent : CharacterChangeEventBase
     {
         public EquipmentSlot Slot { get; }
-        public uint? OldItemId { get; }
-        public uint? NewItemId { get; }
+        public IItem OldItem { get; }
+        public IItem NewItem { get; }
 
         public CharacterEquipmentChangedEvent(
             uint oldStateId, uint newStateId,
-            uint actorId,
-            EquipmentSlot slot, uint? oldItemId, uint? newItemId)
-            : base(oldStateId, newStateId, actorId)
+            ICharacterActor actor,
+            EquipmentSlot slot, IItem oldItem, IItem newItem)
+            : base(oldStateId, newStateId, actor)
         {
             Slot = slot;
-            OldItemId = oldItemId;
-            NewItemId = newItemId;
+            OldItem = oldItem;
+            NewItem = newItem;
 
-            Description = $"Actor {actorId} {slot} changed from {oldItemId} to {newItemId}";
+            Description = $"Actor {actor.Name}'s {slot} changed from {oldItem?.Name ?? "[Empty]"} to {newItem?.Name ?? "[Empty]"}";
         }
     }
 }

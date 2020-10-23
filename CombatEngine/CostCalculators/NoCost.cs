@@ -15,5 +15,10 @@ namespace SadPumpkin.Util.CombatEngine.CostCalculators
         {
             // Intentionally left blank
         }
+
+        public string Description()
+        {
+            return string.Empty;
+        }
     }
 }

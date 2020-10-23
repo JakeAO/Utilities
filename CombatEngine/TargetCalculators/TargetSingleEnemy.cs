@@ -12,6 +12,8 @@ namespace SadPumpkin.Util.CombatEngine.TargetCalculators
 
         }
 
+        public string Description { get; } = "One Enemy";
+
         public bool CanTarget(ICharacterActor sourceCharacter, ICharacterActor targetCharacter)
         {
             return sourceCharacter.Party != targetCharacter.Party &&

@@ -98,10 +98,10 @@ namespace SadPumpkin.Util.CombatEngine
                         controller.SelectAction(activeEntity, actionsForEntity, OnActionSelected);
 
                         // Wait for Controller response
-                        while (!_pendingSelectedActionId.HasValue)
+                        do
                         {
-                            Thread.Sleep(1000);
-                        }
+                            Thread.Sleep(250);
+                        } while (!_pendingSelectedActionId.HasValue);
 
                         // Validate response
                         actionsForEntity.TryGetValue(_pendingSelectedActionId.Value, out selectedAction);
@@ -159,12 +159,6 @@ namespace SadPumpkin.Util.CombatEngine
                 stateChangeEvents.Add(new CombatStateChangedEvent(oldState.Id, newState.Id, oldState.State, newState.State));
             }
 
-            // ActiveEntity
-            if (oldState.ActiveActor?.Id != newState.ActiveActor?.Id)
-            {
-                stateChangeEvents.Add(new ActiveActorChangedEvent(oldState.Id, newState.Id, oldState.ActiveActor?.Id, newState.ActiveActor?.Id));
-            }
-
             // InitiativeActors
             foreach (var newPair in newState.InitiativeOrder)
             {
@@ -180,14 +174,6 @@ namespace SadPumpkin.Util.CombatEngine
             uint oldStateId, uint newStateId,
             IInitiativePair oldInitPair, IInitiativePair newInitPair)
         {
-            if (Math.Abs(oldInitPair.Initiative - newInitPair.Initiative) > float.Epsilon)
-            {
-                yield return new ActorInitiativeChangedEvent(
-                    oldStateId, newStateId,
-                    oldInitPair.Entity.Id,
-                    oldInitPair.Initiative, newInitPair.Initiative);
-            }
-
             if (oldInitPair.Entity is IPlayerCharacterActor oldPlayerCharacter &&
                 newInitPair.Entity is IPlayerCharacterActor newPlayerCharacter)
             {
@@ -197,8 +183,8 @@ namespace SadPumpkin.Util.CombatEngine
                     {
                         yield return new CharacterEquipmentChangedEvent(
                             oldStateId, newStateId,
-                            oldPlayerCharacter.Id,
-                            equipmentSlot, oldPlayerCharacter.Equipment[equipmentSlot]?.Id, newPlayerCharacter.Equipment[equipmentSlot]?.Id);
+                            oldPlayerCharacter,
+                            equipmentSlot, oldPlayerCharacter.Equipment[equipmentSlot], newPlayerCharacter.Equipment[equipmentSlot]);
                     }
                 }
             }
@@ -212,7 +198,7 @@ namespace SadPumpkin.Util.CombatEngine
                     {
                         yield return new CharacterStatChangedEvent(
                             oldStateId, newStateId,
-                            oldCharacter.Id,
+                            oldCharacter,
                             statType, oldCharacter.Stats[statType], newCharacter.Stats[statType]);
                     }
                 }
@@ -225,7 +211,7 @@ namespace SadPumpkin.Util.CombatEngine
                 {
                     yield return new ActorAlivenessChangedEvent(
                         oldStateId, newStateId,
-                        oldActor.Id,
+                        oldActor,
                         oldActor.IsAlive(), newActor.IsAlive());
                 }
             }

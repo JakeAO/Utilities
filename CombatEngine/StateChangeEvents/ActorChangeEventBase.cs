@@ -1,15 +1,17 @@
-﻿namespace SadPumpkin.Util.CombatEngine.StateChangeEvents
+﻿using SadPumpkin.Util.CombatEngine.Actor;
+
+namespace SadPumpkin.Util.CombatEngine.StateChangeEvents
 {
     public abstract class ActorChangeEventBase : StateChangeEventBase
     {
-        public uint ActorId { get; }
+        public IInitiativeActor Actor { get; }
 
-        protected ActorChangeEventBase(uint oldStateId, uint newStateId, uint actorId)
+        protected ActorChangeEventBase(uint oldStateId, uint newStateId, IInitiativeActor actor)
             : base(oldStateId, newStateId)
         {
-            ActorId = actorId;
+            Actor = actor;
 
-            Description = $"No description for event type {GetType().Name} for actor {actorId} from state {oldStateId} to {newStateId}";
+            Description = $"No description for event type {GetType().Name} for actor {actor.Name} from state {oldStateId} to {newStateId}";
         }
     }
 }

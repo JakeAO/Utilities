@@ -11,16 +11,20 @@ namespace SadPumpkin.Util.CombatEngine.EffectCalculators
 
         public Func<ICharacterActor, uint> MinHealingCalculation { get; }
         public Func<ICharacterActor, uint> MaxHealingCalculation { get; }
+        
+        public string Description { get; }
 
-        public HealingEffect(Func<ICharacterActor, uint> healingCalculation)
+        public HealingEffect(Func<ICharacterActor, uint> healingCalculation, string description)
         {
             MinHealingCalculation = MaxHealingCalculation = healingCalculation;
+            Description = description;
         }
 
-        public HealingEffect(Func<ICharacterActor, uint> minHealingCalculation, Func<ICharacterActor, uint> maxHealingCalculation)
+        public HealingEffect(Func<ICharacterActor, uint> minHealingCalculation, Func<ICharacterActor, uint> maxHealingCalculation, string description)
         {
             MinHealingCalculation = minHealingCalculation;
             MaxHealingCalculation = maxHealingCalculation;
+            Description = description;
         }
 
         public void Apply(IInitiativeActor sourceEntity, IReadOnlyCollection<ICharacterActor> targetCharacters)

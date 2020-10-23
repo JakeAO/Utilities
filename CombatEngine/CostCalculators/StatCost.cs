@@ -24,5 +24,10 @@ namespace SadPumpkin.Util.CombatEngine.CostCalculators
             if (entity is ICharacterActor character)
                 character.Stats.ModifyStat(Type, (int) -Amount);
         }
+
+        public string Description()
+        {
+            return $"{Amount} {Type}";
+        }
     }
 }

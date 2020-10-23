@@ -13,18 +13,22 @@ namespace SadPumpkin.Util.CombatEngine.EffectCalculators
         public DamageType DamageType { get; }
         public Func<ICharacterActor, uint> MinDamageCalculation { get; }
         public Func<ICharacterActor, uint> MaxDamageCalculation { get; }
+        
+        public string Description { get; }
 
-        public DamageEffect(DamageType damageType, Func<ICharacterActor, uint> damageCalculation)
+        public DamageEffect(DamageType damageType, Func<ICharacterActor, uint> damageCalculation, string description)
         {
             DamageType = damageType;
             MinDamageCalculation = MaxDamageCalculation = damageCalculation;
+            Description = description;
         }
 
-        public DamageEffect(DamageType damageType, Func<ICharacterActor, uint> minDamageCalculation, Func<ICharacterActor, uint> maxDamageCalculation)
+        public DamageEffect(DamageType damageType, Func<ICharacterActor, uint> minDamageCalculation, Func<ICharacterActor, uint> maxDamageCalculation, string description)
         {
             DamageType = damageType;
             MinDamageCalculation = minDamageCalculation;
             MaxDamageCalculation = maxDamageCalculation;
+            Description = description;
         }
 
         public void Apply(IInitiativeActor sourceEntity, IReadOnlyCollection<ICharacterActor> targetCharacters)

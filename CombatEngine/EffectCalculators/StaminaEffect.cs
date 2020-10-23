@@ -8,10 +8,13 @@ namespace SadPumpkin.Util.CombatEngine.EffectCalculators
     public class StaminaEffect : IEffectCalc
     {
         public Func<ICharacterActor, int> StaminaCalculation { get; }
+        
+        public string Description { get; }
 
-        public StaminaEffect(Func<ICharacterActor, int> staminaCalculation)
+        public StaminaEffect(Func<ICharacterActor, int> staminaCalculation, string description)
         {
             StaminaCalculation = staminaCalculation;
+            Description = description;
         }
 
         public void Apply(IInitiativeActor sourceEntity, IReadOnlyCollection<ICharacterActor> targetCharacters)
