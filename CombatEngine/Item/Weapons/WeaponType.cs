@@ -5,16 +5,16 @@ namespace SadPumpkin.Util.CombatEngine.Item.Weapons
     [Flags]
     public enum WeaponType
     {
-        Invalid = 1,
+        Invalid = 0,
         
-        Sword = 2,
-        GreatSword = 4,
-        Axe = 8,
-        GreatAxe = 16,
-        Spear = 32,
-        Staff = 64,
-        Rod = 128,
-        Bow = 245,
-        Fist = 512
+        Sword = 1,
+        GreatSword = 2,
+        Axe = 4,
+        GreatAxe = 8,
+        Spear = 16,
+        Staff = 32,
+        Rod = 64,
+        Bow = 128,
+        Fist = 256
     }
 }

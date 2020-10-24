@@ -12,9 +12,8 @@ namespace SadPumpkin.Util.CombatEngine.Item.Weapons
         public string Desc { get; }
         public ItemType ItemType { get; }
         public WeaponType WeaponType { get; }
+        public IAbility AttackAbility { get; }
         public IReadOnlyCollection<IAbility> AddedAbilities { get; }
-
-        private readonly IAbility _attackAbility;
 
         public Weapon()
             : this(0,
@@ -37,20 +36,19 @@ namespace SadPumpkin.Util.CombatEngine.Item.Weapons
             Desc = desc;
             ItemType = ItemType.Weapon;
             WeaponType = weaponType;
+            AttackAbility = attackAbility;
             AddedAbilities = addedAbilities != null
                 ? new List<IAbility>(addedAbilities)
                 : new List<IAbility>();
-
-            _attackAbility = attackAbility;
         }
 
         public IReadOnlyCollection<IAction> GetAllActions(ICharacterActor sourceCharacter, IReadOnlyCollection<ITargetableActor> possibleTargets, bool isEquipped)
         {
             List<IAction> actions = new List<IAction>(10);
 
-            if (_attackAbility != null && isEquipped)
+            if (AttackAbility != null && isEquipped)
             {
-                actions.AddRange(ActionUtil.GetActionsForAbility(_attackAbility, sourceCharacter, possibleTargets));
+                actions.AddRange(ActionUtil.GetActionsForAbility(AttackAbility, sourceCharacter, possibleTargets));
             }
 
             if (AddedAbilities != null)

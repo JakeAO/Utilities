@@ -5,10 +5,10 @@ namespace SadPumpkin.Util.CombatEngine.Item.Armors
     [Flags]
     public enum ArmorType
     {
-        Invalid = 1,
+        Invalid = 0,
         
-        Light = 2,
-        Medium = 4,
-        Heavy = 8
+        Light = 1,
+        Medium = 2,
+        Heavy = 4
     }
 }

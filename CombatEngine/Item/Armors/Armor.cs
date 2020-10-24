@@ -14,9 +14,8 @@ namespace SadPumpkin.Util.CombatEngine.Item.Armors
         public string Desc { get; }
         public ItemType ItemType { get; }
         public ArmorType ArmorType { get; }
+        public IReadOnlyDictionary<DamageType, float> DamageModifiers { get; }
         public IReadOnlyCollection<IAbility> AddedAbilities { get; }
-
-        private readonly IReadOnlyDictionary<DamageType, float> _damageModifiers;
 
         public Armor()
             : this(0,
@@ -39,13 +38,12 @@ namespace SadPumpkin.Util.CombatEngine.Item.Armors
             Desc = desc;
             ItemType = ItemType.Armor;
             ArmorType = armorType;
+            DamageModifiers = damageModifiers != null
+                ? new Dictionary<DamageType, float>(damageModifiers)
+                : new Dictionary<DamageType, float>();
             AddedAbilities = addedAbilities != null
                 ? new List<IAbility>(addedAbilities)
                 : new List<IAbility>();
-
-            _damageModifiers = damageModifiers != null
-                ? new Dictionary<DamageType, float>(damageModifiers)
-                : new Dictionary<DamageType, float>();
         }
 
         public IReadOnlyCollection<IAction> GetAllActions(ICharacterActor sourceCharacter, IReadOnlyCollection<ITargetableActor> possibleTargets, bool isEquipped)
@@ -65,10 +63,10 @@ namespace SadPumpkin.Util.CombatEngine.Item.Armors
 
         public float GetReducedDamage(float damageAmount, DamageType damageType)
         {
-            if (_damageModifiers != null && _damageModifiers.Count > 0)
+            if (DamageModifiers != null && DamageModifiers.Count > 0)
             {
                 float damage = damageAmount;
-                if (_damageModifiers.TryGetValue(damageType, out float modifier))
+                if (DamageModifiers.TryGetValue(damageType, out float modifier))
                 {
                     damage *= modifier;
                 }
@@ -78,7 +76,7 @@ namespace SadPumpkin.Util.CombatEngine.Item.Armors
                     {
                         DamageType enumType = (DamageType) enumValue;
                         if ((enumValue & (int) damageType) == enumValue &&
-                            _damageModifiers.TryGetValue(enumType, out modifier))
+                            DamageModifiers.TryGetValue(enumType, out modifier))
                         {
                             damage *= modifier;
                         }
