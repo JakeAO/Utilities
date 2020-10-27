@@ -13,7 +13,7 @@
             OldCombatState = oldCombatState;
             NewCombatState = newCombatState;
 
-            Description = $"CombatState changed from {OldCombatState} to {NewCombatState}";
+            Description = $"Combat state changed to {NewCombatState}";
         }
     }
 }

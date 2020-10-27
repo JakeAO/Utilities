@@ -16,7 +16,7 @@ namespace SadPumpkin.Util.CombatEngine.StateChangeEvents
             OldAlive = oldAlive;
             NewAlive = newAlive;
 
-            Description = $"Actor {actor.Name} has {(newAlive ? "revived" : "died")}.";
+            Description = $"{actor.Name} has {(newAlive ? "been revived" : "died")}.";
         }
     }
 }

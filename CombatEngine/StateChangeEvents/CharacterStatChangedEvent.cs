@@ -19,7 +19,15 @@ namespace SadPumpkin.Util.CombatEngine.StateChangeEvents
             OldValue = oldValue;
             NewValue = newValue;
 
-            Description = $"Actor {actor.Name}'s {stat} changed from {oldValue} to {newValue}";
+            int change = (int) newValue - (int) oldValue;
+            if (change > 0)
+            {
+                Description = $"{actor.Name}'s {stat} increased by {change}";
+            }
+            else if (change < 0)
+            {
+                Description = $"{actor.Name}'s {stat} decreased by {-change}";
+            }
         }
     }
 }

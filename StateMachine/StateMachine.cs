@@ -15,9 +15,11 @@ namespace SadPumpkin.Util.StateMachine
             SharedContext.Set(new StateChanged(), overwrite: false);
         }
 
-        public void ChangeState<T>() where T : IState, new()
+        public void ChangeState<T>() where T : IState, new() => ChangeState(new T());
+
+        public void ChangeState<T>(T constructedState) where T : IState
         {
-            IState nextState = new T();
+            IState nextState = constructedState;
 
             CurrentState.PerformTeardown(SharedContext, nextState);
 

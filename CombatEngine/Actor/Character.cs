@@ -18,7 +18,7 @@ namespace SadPumpkin.Util.CombatEngine.Actor
         
         public bool IsAlive() => Stats[StatType.HP] > 0u;
         public bool CanTarget() => IsAlive();
-        public float GetInitiative() => 10f + 5f * (Stats[StatType.DEX] / 80f);
+        public float GetInitiative() => 10f + (Stats[StatType.DEX] - 10f - 2 * (Stats[StatType.LVL] - 1)) / Stats[StatType.LVL];
 
         public Character()
             : this(0, 0, string.Empty, NullClass.Instance, new StatMap.StatMap())

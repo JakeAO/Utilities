@@ -20,7 +20,14 @@ namespace SadPumpkin.Util.CombatEngine.StateChangeEvents
             OldItem = oldItem;
             NewItem = newItem;
 
-            Description = $"Actor {actor.Name}'s {slot} changed from {oldItem?.Name ?? "[Empty]"} to {newItem?.Name ?? "[Empty]"}";
+            if (NewItem != null)
+            {
+                Description = $"{NewItem?.Name} equipped to {actor.Name}'s {slot} slot.";
+            }
+            else
+            {
+                Description = $"{OldItem?.Name} unequipped from {actor.Name}'s {slot} slot.";
+            }
         }
     }
 }
