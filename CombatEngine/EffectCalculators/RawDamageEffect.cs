@@ -7,13 +7,23 @@ namespace SadPumpkin.Util.CombatEngine.EffectCalculators
 {
     public class RawDamageEffect : IEffectCalc
     {
-        public Func<ICharacterActor, uint> DamageCalculation { get; }
-        
+        private static readonly Random RANDOM = new Random();
+
+        public Func<ICharacterActor, uint> MinCalculation { get; }
+        public Func<ICharacterActor, uint> MaxCalculation { get; }
+
         public string Description { get; }
 
-        public RawDamageEffect(Func<ICharacterActor, uint> damageCalculation, string description)
+        public RawDamageEffect(Func<ICharacterActor, uint> calculation, string description)
         {
-            DamageCalculation = damageCalculation;
+            MinCalculation = MaxCalculation = calculation;
+            Description = description;
+        }
+
+        public RawDamageEffect(Func<ICharacterActor, uint> minCalculation, Func<ICharacterActor, uint> maxCalculation, string description)
+        {
+            MinCalculation = minCalculation;
+            MaxCalculation = maxCalculation;
             Description = description;
         }
 
@@ -21,12 +31,22 @@ namespace SadPumpkin.Util.CombatEngine.EffectCalculators
         {
             if (sourceEntity is ICharacterActor sourceCharacter)
             {
-                int damage = (int) -DamageCalculation(sourceCharacter);
+                int damage = (int) -GetRawAmount(sourceCharacter);
                 foreach (ICharacterActor targetCharacter in targetCharacters)
                 {
                     targetCharacter.Stats.ModifyStat(StatType.HP, damage);
                 }
             }
+        }
+
+        private uint GetRawAmount(ICharacterActor sourceCharacter)
+        {
+            if (MinCalculation == MaxCalculation)
+                return MinCalculation(sourceCharacter);
+
+            uint min = MinCalculation(sourceCharacter);
+            uint max = MaxCalculation(sourceCharacter) + 1; // Random.Next max is exclusive, so add 1.
+            return (uint) RANDOM.Next((int) min, (int) max);
         }
     }
 }

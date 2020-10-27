@@ -5,23 +5,26 @@ using SadPumpkin.Util.CombatEngine.StatMap;
 
 namespace SadPumpkin.Util.CombatEngine.EffectCalculators
 {
-    public class StaminaEffect : IEffectCalc
+    public class StatEffect : IEffectCalc
     {
         private static readonly Random RANDOM = new Random();
 
+        public StatType Stat { get; }
         public Func<ICharacterActor, uint> MinCalculation { get; }
         public Func<ICharacterActor, uint> MaxCalculation { get; }
 
         public string Description { get; }
 
-        public StaminaEffect(Func<ICharacterActor, uint> calculation, string description)
+        public StatEffect(StatType stat, Func<ICharacterActor, uint> calculation, string description)
         {
+            Stat = stat;
             MinCalculation = MaxCalculation = calculation;
             Description = description;
         }
 
-        public StaminaEffect(Func<ICharacterActor, uint> minCalculation, Func<ICharacterActor, uint> maxCalculation, string description)
+        public StatEffect(StatType stat, Func<ICharacterActor, uint> minCalculation, Func<ICharacterActor, uint> maxCalculation, string description)
         {
+            Stat = stat;
             MinCalculation = minCalculation;
             MaxCalculation = maxCalculation;
             Description = description;
@@ -31,10 +34,10 @@ namespace SadPumpkin.Util.CombatEngine.EffectCalculators
         {
             if (sourceEntity is ICharacterActor sourceCharacter)
             {
-                int stamina = (int) -GetRawAmount(sourceCharacter);
+                int effect = (int) -GetRawAmount(sourceCharacter);
                 foreach (ICharacterActor targetCharacter in targetCharacters)
                 {
-                    targetCharacter.Stats.ModifyStat(StatType.STA, stamina);
+                    targetCharacter.Stats.ModifyStat(Stat, effect);
                 }
             }
         }

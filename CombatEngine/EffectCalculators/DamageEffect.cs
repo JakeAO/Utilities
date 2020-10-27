@@ -11,23 +11,23 @@ namespace SadPumpkin.Util.CombatEngine.EffectCalculators
         private static readonly Random RANDOM = new Random();
 
         public DamageType DamageType { get; }
-        public Func<ICharacterActor, uint> MinDamageCalculation { get; }
-        public Func<ICharacterActor, uint> MaxDamageCalculation { get; }
+        public Func<ICharacterActor, uint> MinCalculation { get; }
+        public Func<ICharacterActor, uint> MaxCalculation { get; }
         
         public string Description { get; }
 
-        public DamageEffect(DamageType damageType, Func<ICharacterActor, uint> damageCalculation, string description)
+        public DamageEffect(DamageType damageType, Func<ICharacterActor, uint> calculation, string description)
         {
             DamageType = damageType;
-            MinDamageCalculation = MaxDamageCalculation = damageCalculation;
+            MinCalculation = MaxCalculation = calculation;
             Description = description;
         }
 
-        public DamageEffect(DamageType damageType, Func<ICharacterActor, uint> minDamageCalculation, Func<ICharacterActor, uint> maxDamageCalculation, string description)
+        public DamageEffect(DamageType damageType, Func<ICharacterActor, uint> minCalculation, Func<ICharacterActor, uint> maxCalculation, string description)
         {
             DamageType = damageType;
-            MinDamageCalculation = minDamageCalculation;
-            MaxDamageCalculation = maxDamageCalculation;
+            MinCalculation = minCalculation;
+            MaxCalculation = maxCalculation;
             Description = description;
         }
 
@@ -35,7 +35,7 @@ namespace SadPumpkin.Util.CombatEngine.EffectCalculators
         {
             if (sourceEntity is ICharacterActor sourceCharacter)
             {
-                uint damage = GetRawDamage(sourceCharacter);
+                uint damage = GetRawAmount(sourceCharacter);
                 foreach (ICharacterActor targetCharacter in targetCharacters)
                 {
                     float modifiedDamage = targetCharacter.GetReducedDamage(damage, DamageType);
@@ -44,13 +44,13 @@ namespace SadPumpkin.Util.CombatEngine.EffectCalculators
             }
         }
 
-        private uint GetRawDamage(ICharacterActor sourceCharacter)
+        private uint GetRawAmount(ICharacterActor sourceCharacter)
         {
-            if (MinDamageCalculation == MaxDamageCalculation)
-                return MinDamageCalculation(sourceCharacter);
+            if (MinCalculation == MaxCalculation)
+                return MinCalculation(sourceCharacter);
 
-            uint min = MinDamageCalculation(sourceCharacter);
-            uint max = MaxDamageCalculation(sourceCharacter) + 1; // Random.Next max is exclusive, so add 1.
+            uint min = MinCalculation(sourceCharacter);
+            uint max = MaxCalculation(sourceCharacter) + 1; // Random.Next max is exclusive, so add 1.
             return (uint) RANDOM.Next((int) min, (int) max);
         }
     }

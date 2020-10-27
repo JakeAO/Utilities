@@ -9,21 +9,21 @@ namespace SadPumpkin.Util.CombatEngine.EffectCalculators
     {
         private static readonly Random RANDOM = new Random();
 
-        public Func<ICharacterActor, uint> MinHealingCalculation { get; }
-        public Func<ICharacterActor, uint> MaxHealingCalculation { get; }
+        public Func<ICharacterActor, uint> MinCalculation { get; }
+        public Func<ICharacterActor, uint> MaxCalculation { get; }
         
         public string Description { get; }
 
-        public HealingEffect(Func<ICharacterActor, uint> healingCalculation, string description)
+        public HealingEffect(Func<ICharacterActor, uint> calculation, string description)
         {
-            MinHealingCalculation = MaxHealingCalculation = healingCalculation;
+            MinCalculation = MaxCalculation = calculation;
             Description = description;
         }
 
-        public HealingEffect(Func<ICharacterActor, uint> minHealingCalculation, Func<ICharacterActor, uint> maxHealingCalculation, string description)
+        public HealingEffect(Func<ICharacterActor, uint> minCalculation, Func<ICharacterActor, uint> maxCalculation, string description)
         {
-            MinHealingCalculation = minHealingCalculation;
-            MaxHealingCalculation = maxHealingCalculation;
+            MinCalculation = minCalculation;
+            MaxCalculation = maxCalculation;
             Description = description;
         }
 
@@ -41,11 +41,11 @@ namespace SadPumpkin.Util.CombatEngine.EffectCalculators
 
         private uint GetRawHealing(ICharacterActor sourceCharacter)
         {
-            if (MinHealingCalculation == MaxHealingCalculation)
-                return MinHealingCalculation(sourceCharacter);
+            if (MinCalculation == MaxCalculation)
+                return MinCalculation(sourceCharacter);
 
-            uint min = MinHealingCalculation(sourceCharacter);
-            uint max = MaxHealingCalculation(sourceCharacter) + 1; // Random.Next max is exclusive, so add 1.
+            uint min = MinCalculation(sourceCharacter);
+            uint max = MaxCalculation(sourceCharacter) + 1; // Random.Next max is exclusive, so add 1.
             return (uint) RANDOM.Next((int) min, (int) max);
         }
     }
