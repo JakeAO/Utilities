@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <RootNamespace>SadPumpkin.Util.CombatEngine</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Context\Context.csproj" />
+      <ProjectReference Include="..\Signals\Signals.csproj" />
+    </ItemGroup>
+
+</Project>
