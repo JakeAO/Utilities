@@ -14,14 +14,21 @@ namespace SadPumpkin.Util.CombatEngine.TargetCalculators
 
         public string Description { get; } = "Self";
 
-        public bool CanTarget(ICharacterActor sourceCharacter, ICharacterActor targetCharacter)
+        public bool CanTarget(IInitiativeActor sourceCharacter, ITargetableActor targetCharacter)
         {
             return sourceCharacter.Id == targetCharacter.Id;
         }
 
-        public IReadOnlyCollection<IReadOnlyCollection<ICharacterActor>> GetTargetOptions(ICharacterActor sourceCharacter, IReadOnlyCollection<ITargetableActor> possibleTargets)
+        public IReadOnlyCollection<IReadOnlyCollection<ITargetableActor>> GetTargetOptions(
+            IInitiativeActor sourceCharacter, IReadOnlyCollection<ITargetableActor> possibleTargets)
         {
-            return new[] {new[] {sourceCharacter}};
+            List<IReadOnlyCollection<ITargetableActor>> targetOptions = new List<IReadOnlyCollection<ITargetableActor>>(possibleTargets.Count);
+            if (sourceCharacter is ITargetableActor targetableSource)
+            {
+                targetOptions.Add(new[] {targetableSource});
+            }
+
+            return targetOptions;
         }
     }
 }

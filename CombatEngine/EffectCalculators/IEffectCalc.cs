@@ -6,6 +6,6 @@ namespace SadPumpkin.Util.CombatEngine.EffectCalculators
     public interface IEffectCalc
     {
         string Description { get; }
-        void Apply(IInitiativeActor sourceEntity, IReadOnlyCollection<ICharacterActor> targetCharacters);
+        void Apply(IInitiativeActor sourceEntity, IReadOnlyCollection<ITargetableActor> targetActors);
     }
 }

@@ -6,12 +6,12 @@ namespace SadPumpkin.Util.CombatEngine.CostCalculators
     {
         public static readonly NoCost Instance = new NoCost();
         
-        public bool CanAfford(IInitiativeActor entity)
+        public bool CanAfford(IInitiativeActor entity, IIdTracked actionSource)
         {
             return true;
         }
 
-        public void Pay(IInitiativeActor entity)
+        public void Pay(IInitiativeActor entity, IIdTracked actionSource)
         {
             // Intentionally left blank
         }

@@ -8,6 +8,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Context\Context.csproj" />
       <ProjectReference Include="..\Signals\Signals.csproj" />
+      <ProjectReference Include="..\TrackableIds\TrackableIds.csproj" />
     </ItemGroup>
 
 </Project>

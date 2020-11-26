@@ -10,7 +10,7 @@ namespace SadPumpkin.Util.CombatEngine.EffectCalculators
 
         public string Description { get; } = String.Empty;
 
-        public void Apply(IInitiativeActor sourceEntity, IReadOnlyCollection<ICharacterActor> targetCharacters)
+        public void Apply(IInitiativeActor sourceEntity, IReadOnlyCollection<ITargetableActor> targetCharacters)
         {
             // Intentionally left blank
         }

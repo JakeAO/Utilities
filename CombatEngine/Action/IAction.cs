@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
-using SadPumpkin.Util.CombatEngine.Abilities;
 using SadPumpkin.Util.CombatEngine.Actor;
+using SadPumpkin.Util.CombatEngine.CostCalculators;
+using SadPumpkin.Util.CombatEngine.EffectCalculators;
 
 namespace SadPumpkin.Util.CombatEngine.Action
 {
@@ -8,8 +9,11 @@ namespace SadPumpkin.Util.CombatEngine.Action
     {
         uint Id { get; }
         bool Available { get; }
-        IAbility Ability { get; }
         IInitiativeActor Source { get; }
-        IReadOnlyCollection<ICharacterActor> Targets { get; }
+        IReadOnlyCollection<ITargetableActor> Targets { get; }
+        uint Speed { get; }
+        ICostCalc Cost { get; }
+        IEffectCalc Effect { get; }
+        IIdTracked ActionSource { get; }
     }
 }

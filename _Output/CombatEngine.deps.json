@@ -8,15 +8,27 @@
     ".NETCoreApp,Version=v3.1": {
       "CombatEngine/1.0.0": {
         "dependencies": {
-          "Signals": "1.0.0"
+          "Context": "1.0.0",
+          "Signals": "1.0.0",
+          "TrackableIds": "1.0.0"
         },
         "runtime": {
           "CombatEngine.dll": {}
         }
       },
+      "Context/1.0.0": {
+        "runtime": {
+          "Context.dll": {}
+        }
+      },
       "Signals/1.0.0": {
         "runtime": {
           "Signals.dll": {}
+        }
+      },
+      "TrackableIds/1.0.0": {
+        "runtime": {
+          "TrackableIds.dll": {}
         }
       }
     }
@@ -27,7 +39,17 @@
       "serviceable": false,
       "sha512": ""
     },
+    "Context/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
     "Signals/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "TrackableIds/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

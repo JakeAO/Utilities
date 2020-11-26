@@ -14,23 +14,20 @@ namespace SadPumpkin.Util.CombatEngine.TargetCalculators
 
         public string Description { get; } = "All Enemies";
 
-        public bool CanTarget(ICharacterActor sourceCharacter, ICharacterActor targetCharacter)
+        public bool CanTarget(IInitiativeActor sourceCharacter, ITargetableActor targetCharacter)
         {
             return sourceCharacter.Party != targetCharacter.Party &&
                    targetCharacter.IsAlive();
         }
 
-        public IReadOnlyCollection<IReadOnlyCollection<ICharacterActor>> GetTargetOptions(ICharacterActor sourceCharacter, IReadOnlyCollection<ITargetableActor> possibleTargets)
+        public IReadOnlyCollection<IReadOnlyCollection<ITargetableActor>> GetTargetOptions(IInitiativeActor sourceCharacter, IReadOnlyCollection<ITargetableActor> possibleTargets)
         {
-            List<ICharacterActor> allTargets = new List<ICharacterActor>(possibleTargets.Count);
+            List<ITargetableActor> allTargets = new List<ITargetableActor>(possibleTargets.Count);
             foreach (ITargetableActor possibleTarget in possibleTargets)
             {
-                if (!(possibleTarget is ICharacterActor targetCharacter))
-                    continue;
-
-                if (CanTarget(sourceCharacter, targetCharacter))
+                if (CanTarget(sourceCharacter, possibleTarget))
                 {
-                    allTargets.Add(targetCharacter);
+                    allTargets.Add(possibleTarget);
                 }
             }
             return new[] {allTargets};

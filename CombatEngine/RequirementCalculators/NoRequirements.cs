@@ -6,7 +6,7 @@ namespace SadPumpkin.Util.CombatEngine.RequirementCalculators
     {
         public static readonly NoRequirements Instance = new NoRequirements();
         
-        public bool MeetsRequirement(ICharacterActor character)
+        public bool MeetsRequirement(IInitiativeActor actor)
         {
             return true;
         }

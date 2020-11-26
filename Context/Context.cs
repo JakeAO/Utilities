@@ -10,7 +10,7 @@ namespace SadPumpkin.Util.Context
         private readonly IContext _baseContext = null;
         private readonly Dictionary<Type, Dictionary<string, object>> _data = new Dictionary<Type, Dictionary<string, object>>();
 
-        public Context(IContext baseContext = null, params (string key, object val)[] initialData)
+        public Context(IContext baseContext = null, params KeyValuePair<string, object>[] initialData)
         {
             _baseContext = baseContext;
             foreach ((string key, object val) in initialData)

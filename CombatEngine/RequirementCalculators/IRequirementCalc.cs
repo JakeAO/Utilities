@@ -4,6 +4,6 @@ namespace SadPumpkin.Util.CombatEngine.RequirementCalculators
 {
     public interface IRequirementCalc
     {
-        bool MeetsRequirement(ICharacterActor character);
+        bool MeetsRequirement(IInitiativeActor actor);
     }
 }
