@@ -1,14 +1,15 @@
-﻿using SadPumpkin.Util.StateMachine.Signals;
+﻿using SadPumpkin.Util.Context;
+using SadPumpkin.Util.StateMachine.Signals;
 using SadPumpkin.Util.StateMachine.States;
 
 namespace SadPumpkin.Util.StateMachine
 {
     public class StateMachine : IStateMachine
     {
-        public Context.Context SharedContext { get; }
+        public IContext SharedContext { get; }
         public IState CurrentState { get; private set; } = NullState.INSTANCE;
 
-        public StateMachine(Context.Context sharedContext)
+        public StateMachine(IContext sharedContext)
         {
             SharedContext = sharedContext;
             SharedContext.Set(this);

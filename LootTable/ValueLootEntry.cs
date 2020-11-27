@@ -11,23 +11,23 @@ namespace SadPumpkin.Util.LootTable
         /// Weighted probability of this loot entry. Will be compared against
         /// other probabilities, with higher values being more frequent.
         /// </summary>
-        public double Probability { get; }
+        public double Probability { get; set; }
         
         /// <summary>
         /// Unique loot will at most drop a single time in a table evaluation.
         /// </summary>
-        public bool Unique { get; }
+        public bool Unique { get; set; }
         
         /// <summary>
         /// Guaranteed loot will drop for every table evaluation, regardless
         /// of the table's count value.
         /// </summary>
-        public bool Guaranteed { get; }
+        public bool Guaranteed { get; set; }
         
         /// <summary>
         /// Value which this loot entry holds.
         /// </summary>
-        public T Value { get; }
+        public T Value { get; set; }
 
         /// <summary>
         /// Construct a new value entry with the provided parameters.

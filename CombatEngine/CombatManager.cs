@@ -59,7 +59,7 @@ namespace SadPumpkin.Util.CombatEngine
 
             Task.Run(CombatThread);
         }
-
+        
         private void CombatThread()
         {
             WinningPartyId = null;

@@ -1,9 +1,11 @@
-﻿namespace SadPumpkin.Util.StateMachine.States
+﻿using SadPumpkin.Util.Context;
+
+namespace SadPumpkin.Util.StateMachine.States
 {
     public interface IState
     {
-        void PerformSetup(Context.Context context, IState previousState);
-        void PerformContent(Context.Context context);
-        void PerformTeardown(Context.Context context, IState nextState);
+        void PerformSetup(IContext context, IState previousState);
+        void PerformContent(IContext context);
+        void PerformTeardown(IContext context, IState nextState);
     }
 }
