@@ -7,11 +7,6 @@ namespace SadPumpkin.Util.CombatEngine.TargetCalculators
     {
         public static readonly SelfTargetCalculator Instance = new SelfTargetCalculator();
 
-        private SelfTargetCalculator()
-        {
-
-        }
-
         public string Description { get; } = "Self";
 
         public bool CanTarget(IInitiativeActor sourceCharacter, ITargetableActor targetCharacter)

@@ -7,11 +7,6 @@ namespace SadPumpkin.Util.CombatEngine.TargetCalculators
     {
         public static readonly AllEnemyTargetCalculator Instance = new AllEnemyTargetCalculator();
         
-        private AllEnemyTargetCalculator()
-        {
-            
-        }
-
         public string Description { get; } = "All Enemies";
 
         public bool CanTarget(IInitiativeActor sourceCharacter, ITargetableActor targetCharacter)

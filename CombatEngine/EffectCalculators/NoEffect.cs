@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using SadPumpkin.Util.CombatEngine.Actor;
 
 namespace SadPumpkin.Util.CombatEngine.EffectCalculators
@@ -8,7 +7,7 @@ namespace SadPumpkin.Util.CombatEngine.EffectCalculators
     {
         public static readonly NoEffect Instance = new NoEffect();
 
-        public string Description { get; } = String.Empty;
+        public string Description => "None";
 
         public void Apply(IInitiativeActor sourceEntity, IReadOnlyCollection<ITargetableActor> targetCharacters)
         {

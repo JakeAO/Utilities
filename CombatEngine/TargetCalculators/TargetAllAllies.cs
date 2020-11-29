@@ -7,11 +7,6 @@ namespace SadPumpkin.Util.CombatEngine.TargetCalculators
     {
         public static readonly AllAllyTargetCalculator Instance = new AllAllyTargetCalculator();
 
-        private AllAllyTargetCalculator()
-        {
-            
-        }
-
         public string Description { get; } = "All Allies";
 
         public bool CanTarget(IInitiativeActor sourceCharacter, ITargetableActor targetCharacter)
