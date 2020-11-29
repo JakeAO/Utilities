@@ -54,12 +54,22 @@ namespace SadPumpkin.Util.CombatEngine
                     _currentGameState.RawInitiativeOrder.Add(new InitiativePair(actor, (float) RANDOM.NextDouble() * 90f));
                 }
             }
-            
-            SendOutgoingGameState();
 
-            Task.Run(CombatThread);
+            SendOutgoingGameState();
         }
-        
+
+        public void Start(bool autoThread)
+        {
+            if (autoThread)
+            {
+                Task.Run(CombatThread);
+            }
+            else
+            {
+                CombatThread();
+            }
+        }
+
         private void CombatThread()
         {
             WinningPartyId = null;
