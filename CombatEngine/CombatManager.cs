@@ -55,6 +55,9 @@ namespace SadPumpkin.Util.CombatEngine
                 }
             }
 
+            // Order the Initiative list right off the bat
+            IncrementInitiative();
+            
             SendOutgoingGameState();
         }
 
@@ -190,7 +193,7 @@ namespace SadPumpkin.Util.CombatEngine
             {
                 if (tuple is InitiativePair mutableTuple)
                 {
-                    mutableTuple.Initiative += tuple.Entity.GetInitiative();
+                    mutableTuple.Initiative += Math.Max(1, tuple.Entity.GetInitiative());
                 }
             }
 
