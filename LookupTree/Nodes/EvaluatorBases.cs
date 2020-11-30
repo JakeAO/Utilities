@@ -82,9 +82,9 @@ namespace SadPumpkin.Util.LookupTree.Nodes
                 case StringOperationType.StartsWith:
                     return inValue.StartsWith(expectedValue, StringComparison.InvariantCultureIgnoreCase);
                 case StringOperationType.Contains:
-                    return inValue.Contains(expectedValue, StringComparison.InvariantCultureIgnoreCase);
+                    return inValue.Contains(expectedValue);//, StringComparison.InvariantCultureIgnoreCase);
                 case StringOperationType.ContainedIn:
-                    return expectedValue.Contains(inValue, StringComparison.InvariantCultureIgnoreCase);
+                    return expectedValue.Contains(inValue);//, StringComparison.InvariantCultureIgnoreCase);
                 default:
                     throw new InvalidOperationException($"Unhandled StringOperationType of {opType} in GetResult()!");
             }

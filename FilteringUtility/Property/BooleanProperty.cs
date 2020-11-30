@@ -1,6 +1,6 @@
 ﻿namespace SadPumpkin.Util.FilteringUtility.Property
 {
-    public class BooleanProperty : IProperty
+    public class BooleanProperty : IProperty<bool>
     {
         private const string TRUE_VAL = "True";
         private const string FALSE_VAL = "False";

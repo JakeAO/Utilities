@@ -2,7 +2,7 @@
 
 namespace SadPumpkin.Util.FilteringUtility.Property
 {
-    public class EnumProperty<T> : IProperty where T : Enum
+    public class EnumProperty<T> : IProperty<T> where T : Enum
     {
         public T Value { get; }
         public bool CanQuickFilter { get; }

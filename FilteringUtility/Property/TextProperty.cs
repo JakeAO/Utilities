@@ -1,6 +1,6 @@
 ﻿namespace SadPumpkin.Util.FilteringUtility.Property
 {
-    public class TextProperty : IProperty
+    public class TextProperty : IProperty<string>
     {
         public string Value { get; }
         public bool CanQuickFilter { get; }

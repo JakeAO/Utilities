@@ -1,16 +1,83 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <ProjectGuid>{42D1B16B-F1DE-43A9-8B44-43946EEB6971}</ProjectGuid>
+        <OutputType>Library</OutputType>
+        <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>SadPumpkin.Util.LookupTree</RootNamespace>
+        <AssemblyName>LookupTree</AssemblyName>
+        <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+        <FileAlignment>512</FileAlignment>
     </PropertyGroup>
-
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\Debug\</OutputPath>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugType>pdbonly</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release\</OutputPath>
+        <DefineConstants>TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Context\Context.csproj" />
+        <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+          <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+          <Private>True</Private>
+        </Reference>
+        <Reference Include="System" />
+        <Reference Include="System.Core" />
+        <Reference Include="System.Data" />
+        <Reference Include="System.Xml" />
     </ItemGroup>
-
     <ItemGroup>
-      <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+        <Compile Include="LookupTree.cs" />
+        <Compile Include="Nodes\BucketNode.cs" />
+        <Compile Include="Nodes\ConditionNode.cs" />
+        <Compile Include="Nodes\EvaluatorBases.cs" />
+        <Compile Include="Nodes\IEvaluator.cs" />
+        <Compile Include="Nodes\IExtractor.cs" />
+        <Compile Include="Nodes\IIndirector.cs" />
+        <Compile Include="Nodes\IndirectionNode.cs" />
+        <Compile Include="Nodes\INode.cs" />
+        <Compile Include="Nodes\PriorityNode.cs" />
+        <Compile Include="Nodes\ValueNode.cs" />
+        <Compile Include="Payloads\IPayload.cs" />
+        <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="Utils\ITreeDataGetPattern.cs" />
+        <Compile Include="Utils\ITreeDataSetPattern.cs" />
+        <Compile Include="Utils\ITreePathGetPattern.cs" />
+        <Compile Include="Utils\TreeLoader.cs" />
+        <Compile Include="Utils\TreeSaver.cs" />
+        <Compile Include="Utils\Utils.cs" />
     </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Context\Context.csproj">
+        <Project>{d3b13b80-f450-43c8-ab3b-e6a2ac68ed7c}</Project>
+        <Name>Context</Name>
+      </ProjectReference>
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="packages.config" />
+    </ItemGroup>
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+    <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+         Other similar extension points exist, see Microsoft.Common.targets.
+    <Target Name="BeforeBuild">
+    </Target>
+    <Target Name="AfterBuild">
+    </Target>
+    -->
 
 </Project>

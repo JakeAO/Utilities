@@ -2,7 +2,7 @@
 
 namespace SadPumpkin.Util.FilteringUtility.Property
 {
-    public class NumericProperty<T> : IProperty where T : struct, IComparable, IComparable<T>, IEquatable<T>, IFormattable
+    public class NumericProperty<T> : IProperty<T> where T : struct, IComparable, IComparable<T>, IEquatable<T>, IFormattable
     {
         public T Value { get; }
         public bool CanQuickFilter { get; }
