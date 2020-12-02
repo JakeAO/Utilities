@@ -15,5 +15,6 @@ namespace SadPumpkin.Util.CombatEngine.Action
         ICostCalc Cost { get; }
         IEffectCalc Effect { get; }
         IIdTracked ActionSource { get; }
+        IIdTracked ActionProvider { get; }
     }
 }

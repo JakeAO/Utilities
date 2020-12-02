@@ -17,6 +17,11 @@ namespace SadPumpkin.Util.LootTable
         /// A read-only collection of all the ILootEntries held within the table.
         /// </summary>
         IReadOnlyCollection<ILootEntry> Entries { get; }
+        
+        /// <summary>
+        /// A read-only collection of all guaranteed ILootEntries held within the table.
+        /// </summary>
+        IReadOnlyCollection<ILootEntry> GuaranteedEntries { get; }
 
         /// <summary>
         /// Generate a new, random collection of ILootEntries based on their probability.

@@ -30,6 +30,7 @@ namespace SadPumpkin.Util.CombatEngine.Tests
             public ICostCalc Cost { get; set; } = new NoCost();
             public IEffectCalc Effect { get; set; } = new NoEffect();
             public IIdTracked ActionSource { get; set; } = null;
+            public IIdTracked ActionProvider { get; set; } = null;
         }
 
         private class TestActor : IInitiativeActor, ITargetableActor

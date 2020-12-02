@@ -13,23 +13,28 @@ namespace SadPumpkin.Util.LootTable
         /// Count of the ILootEntry values to return for each call to GetLoot().
         /// </summary>
         public int Count { get; set; }
-        
+
         /// <summary>
         /// A read-only collection of all the ILootEntries held within the table.
         /// </summary>
         public IReadOnlyCollection<ILootEntry> Entries => _allEntries;
 
         /// <summary>
+        /// A read-only collection of all guaranteed ILootEntries held within the table.
+        /// </summary>
+        public IReadOnlyCollection<ILootEntry> GuaranteedEntries => _guaranteedEntries;
+
+        /// <summary>
         /// Weighted probability of this loot entry. Will be compared against
         /// other probabilities, with higher values being more frequent.
         /// </summary>
         public double Probability { get; set; }
-        
+
         /// <summary>
         /// Unique loot will at most drop a single time in a table evaluation.
         /// </summary>
         public bool Unique { get; set; }
-        
+
         /// <summary>
         /// Guaranteed loot will drop for every table evaluation, regardless
         /// of the table's count value.
@@ -44,7 +49,6 @@ namespace SadPumpkin.Util.LootTable
         private readonly Random _random = new Random();
         private readonly List<ILootEntry> _allEntries = new List<ILootEntry>(10);
         private readonly List<ILootEntry> _guaranteedEntries = new List<ILootEntry>(10);
-        private readonly List<ILootEntry> _randomEntries = new List<ILootEntry>(10);
 
         /// <summary>
         /// Construct a new LootTable with the provided parameters.
@@ -85,8 +89,6 @@ namespace SadPumpkin.Util.LootTable
                 _allEntries.Add(lootEntry);
                 if (lootEntry.Guaranteed)
                     _guaranteedEntries.Add(lootEntry);
-                else
-                    _randomEntries.Add(lootEntry);
             }
         }
 
@@ -99,8 +101,6 @@ namespace SadPumpkin.Util.LootTable
             void AddEntryToResult(List<ILootEntry> allResults, ILootEntry lootEntry)
             {
                 if (lootEntry == null)
-                    return;
-                if (lootEntry is NullLootEntry)
                     return;
                 if (lootEntry is IValueLootEntry<ILootTable> lootTableEntry)
                 {
@@ -126,7 +126,7 @@ namespace SadPumpkin.Util.LootTable
             for (int i = 0; i < randomCount; i++)
             {
                 double totalProb = 0;
-                foreach (ILootEntry lootEntry in _randomEntries)
+                foreach (ILootEntry lootEntry in _allEntries)
                 {
                     if (!lootEntry.Unique ||
                         !uniques.Contains(lootEntry))
@@ -136,7 +136,7 @@ namespace SadPumpkin.Util.LootTable
                 }
 
                 double hitValue = _random.NextDouble() * totalProb;
-                foreach (ILootEntry lootEntry in _randomEntries)
+                foreach (ILootEntry lootEntry in _allEntries)
                 {
                     if (!lootEntry.Unique ||
                         !uniques.Contains(lootEntry))
@@ -150,8 +150,8 @@ namespace SadPumpkin.Util.LootTable
                         if (lootEntry.Unique)
                         {
                             uniques.Add(lootEntry);
-                            break;
                         }
+                        break;
                     }
                 }
             }
