@@ -138,12 +138,6 @@ namespace SadPumpkin.Util.LootTable
                 double hitValue = _random.NextDouble() * totalProb;
                 foreach (ILootEntry lootEntry in _allEntries)
                 {
-                    if (!lootEntry.Unique ||
-                        !uniques.Contains(lootEntry))
-                    {
-                        hitValue -= lootEntry.Probability;
-                    }
-
                     if (hitValue <= lootEntry.Probability)
                     {
                         AddEntryToResult(results, lootEntry);
@@ -152,6 +146,12 @@ namespace SadPumpkin.Util.LootTable
                             uniques.Add(lootEntry);
                         }
                         break;
+                    }
+                    
+                    if (!lootEntry.Unique ||
+                        !uniques.Contains(lootEntry))
+                    {
+                        hitValue -= lootEntry.Probability;
                     }
                 }
             }

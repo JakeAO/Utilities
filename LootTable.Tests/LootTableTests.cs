@@ -221,5 +221,26 @@ namespace SadPumpkin.Util.LootTable.Tests
 
             Assert.LessOrEqual(1, results.Count(x => x == UNIQUE_ENTRY));
         }
+
+        [Test]
+        public void all_values_are_eventually_returned()
+        {
+            const int COUNT = 1000;
+            ILootEntry[] LOOT_ENTRIES = new ILootEntry[]
+            {
+                new NullLootEntry(),
+                new ValueLootEntry<string>("test1", prob: 1),
+                new ValueLootEntry<string>("test2", prob: 10),
+                new ValueLootEntry<string>("test3", prob: 5),
+                new ValueLootEntry<string>("test4", prob: 20),
+            };
+
+            LootTable table = new LootTable(COUNT, LOOT_ENTRIES);
+
+            IReadOnlyCollection<ILootEntry> results = table.GetLoot();
+
+            bool containSameEntries = results.Distinct().ToHashSet().SetEquals(LOOT_ENTRIES);
+            Assert.IsTrue(containSameEntries);
+        }
     }
 }
