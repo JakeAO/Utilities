@@ -99,6 +99,7 @@ namespace SadPumpkin.Util.CombatEngine.Tests
                     },
                 },
                 new NullStandardActionGenerator(),
+                100f,
                 null,
                 null);
 
@@ -140,11 +141,12 @@ namespace SadPumpkin.Util.CombatEngine.Tests
                     },
                 },
                 new NullStandardActionGenerator(),
+                100f,
                 null,
                 null);
 
             Task.Run(() => combatManager.Start(false));
-            
+
             Assert.Pass();
         }
 
@@ -182,11 +184,12 @@ namespace SadPumpkin.Util.CombatEngine.Tests
                     },
                 },
                 new NullStandardActionGenerator(),
+                100f,
                 null,
                 null);
 
             combatManager.Start(true);
-            
+
             Assert.Pass();
         }
     }

@@ -1,0 +1,10 @@
+digraph "SadPumpkin.Util.CombatEngine.TargetCalculators.SingleAllyTargetCalculator.CanTarget"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="RL";
+  Node1 [label="SadPumpkin.Util.CombatEngine.\lTargetCalculators.SingleAllyTarget\lCalculator.CanTarget",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip="Determines if the given Actor is targetable or not."];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="SadPumpkin.Util.CombatEngine.\lTargetCalculators.SingleAllyTarget\lCalculator.GetTargetOptions",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_target_calculators_1_1_single_ally_target_calculator.html#ae907eb5fcdc85979f3c6866dbb9bac89",tooltip="Calculate all possible targeting permutations."];
+}

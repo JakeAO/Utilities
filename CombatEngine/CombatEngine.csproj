@@ -55,8 +55,8 @@
         <Compile Include="GameState\IGameState.cs" />
         <Compile Include="ICopyable.cs" />
         <Compile Include="IIdTracked.cs" />
-        <Compile Include="IInitiativePair.cs" />
-        <Compile Include="InitiativePair.cs" />
+        <Compile Include="InitiativeQueue\IInitiativeQueue.cs" />
+        <Compile Include="InitiativeQueue\InitiativeQueue.cs" />
         <Compile Include="Party\IParty.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="RequirementCalculators\IRequirementCalc.cs" />

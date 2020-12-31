@@ -1,0 +1,11 @@
+digraph "SadPumpkin.Util.CombatEngine.Actor.IInitiativeActor"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="SadPumpkin.Util.CombatEngine.\lActor.IInitiativeActor",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip="Interface which defines the base Actor for combat."];
+  Node2 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="ICopyable\< IInitiativeActor \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$interface_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_i_copyable.html",tooltip=" "];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="SadPumpkin.Util.CombatEngine.\lActor.ITargetableActor",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$interface_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_actor_1_1_i_targetable_actor.html",tooltip="Interface which defines an Actor that can be targeted by an Action."];
+}
