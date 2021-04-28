@@ -8,18 +8,25 @@ using SadPumpkin.Util.CombatEngine.Actor;
 using SadPumpkin.Util.CombatEngine.CharacterControllers;
 using SadPumpkin.Util.CombatEngine.EquipMap;
 using SadPumpkin.Util.CombatEngine.GameState;
+using SadPumpkin.Util.CombatEngine.InitiativeSorter;
 using SadPumpkin.Util.CombatEngine.Party;
 using SadPumpkin.Util.CombatEngine.Signals;
 using SadPumpkin.Util.CombatEngine.StateChangeEvents;
 using SadPumpkin.Util.CombatEngine.StatMap;
+using SadPumpkin.Util.CombatEngine.WinningPartyProvider;
 using SadPumpkin.Util.Signals;
 
 namespace SadPumpkin.Util.CombatEngine
 {
     public class CombatManager
     {
+        private const float INITIATIVE_THRESHOLD = 100f;
+        
         private static readonly Random RANDOM = new Random();
 
+        private readonly IWinningPartyProvider _winningPartyProvider;
+        private readonly IInitiativeSorter _initiativeSorter;
+        
         private readonly List<IParty> _parties = new List<IParty>(2);
         private readonly List<ITargetableActor> _allTargets = new List<ITargetableActor>(10);
         private readonly Dictionary<uint, ICharacterController> _controllerByPartyId = new Dictionary<uint, ICharacterController>(2);
@@ -35,8 +42,16 @@ namespace SadPumpkin.Util.CombatEngine
         public ISignal<IGameState, IReadOnlyList<IStateChangeEvent>> GameStateUpdated { get; }
         public ISignal<uint> CombatComplete { get; }
         
-        public CombatManager(IReadOnlyCollection<IParty> parties, ISignal<IGameState, IReadOnlyList<IStateChangeEvent>> gameStateUpdatedSignal, ISignal<uint> combatCompleteSignal)
+        public CombatManager(
+            IWinningPartyProvider winningPartyProvider,
+            IInitiativeSorter initiativeSorter,
+            IReadOnlyCollection<IParty> parties, 
+            ISignal<IGameState, IReadOnlyList<IStateChangeEvent>> gameStateUpdatedSignal, 
+            ISignal<uint> combatCompleteSignal)
         {
+            _winningPartyProvider = winningPartyProvider ?? new OneAliveWinningPartyProvider();
+            _initiativeSorter = initiativeSorter ?? new ThresholdInitiativeSorter(INITIATIVE_THRESHOLD);
+            
             GameStateUpdated = gameStateUpdatedSignal ?? new GameStateUpdated();
             CombatComplete = combatCompleteSignal ?? new CombatComplete();
 
@@ -51,7 +66,7 @@ namespace SadPumpkin.Util.CombatEngine
                     if (actor is ITargetableActor targetableActor)
                         _allTargets.Add(targetableActor);
 
-                    _currentGameState.RawInitiativeOrder.Add(new InitiativePair(actor, (float) RANDOM.NextDouble() * 90f));
+                    _currentGameState.RawInitiativeOrder.Add(new InitiativePair(actor, (float) RANDOM.NextDouble() * INITIATIVE_THRESHOLD * 0.9f));
                 }
             }
 
@@ -66,10 +81,10 @@ namespace SadPumpkin.Util.CombatEngine
             _currentGameState.State = CombatState.Active;
             
             uint winningParty = 0u;
-            while (!GetWinningPartyId(out winningParty))
+            while (!_winningPartyProvider.TryGetWinner(_parties, out winningParty))
             {
                 // Get Active Entity
-                InitiativePair activeInitPair = GetNextEntity();
+                IInitiativePair activeInitPair = _initiativeSorter.GetNext(_currentGameState.InitiativeOrder);
                 IInitiativeActor activeEntity = activeInitPair.Entity;
 
                 // Update GameState with ActiveEntity
@@ -82,6 +97,7 @@ namespace SadPumpkin.Util.CombatEngine
                 _currentGameState.Id = GameState.GameState.NextId;
 
                 // Prompt Action
+                float initiativeCost = -100f;
                 if (activeEntity.IsAlive())
                 {
                     ICharacterController controller = _controllerByPartyId[activeEntity.Party];
@@ -109,14 +125,16 @@ namespace SadPumpkin.Util.CombatEngine
                     } while (selectedAction == null || !selectedAction.Available);
 
                     // Apply effects of Action
-                    activeInitPair.Initiative -= selectedAction.Ability.Speed;
+                    initiativeCost = -selectedAction.Ability.Speed;
 
                     selectedAction.Ability.Cost.Pay(selectedAction.Source);
                     selectedAction.Ability.Effect.Apply(selectedAction.Source, selectedAction.Targets);
                 }
-                else
+
+                // Modify active actor's initiative
+                if (activeInitPair is IWritableInitiativePair writableInitiativePair)
                 {
-                    activeInitPair.Initiative -= 100;
+                    writableInitiativePair.IncrementInitiative(initiativeCost);
                 }
 
                 // Update GameState with Effects of Action
@@ -215,54 +233,6 @@ namespace SadPumpkin.Util.CombatEngine
                         oldActor.IsAlive(), newActor.IsAlive());
                 }
             }
-        }
-
-        private bool GetWinningPartyId(out uint winningParty)
-        {
-            winningParty = 0u;
-
-            foreach (IInitiativePair initPair in _currentGameState.RawInitiativeOrder)
-            {
-                IInitiativeActor actor = initPair.Entity;
-                if (actor == null)
-                    continue;
-                if (!actor.IsAlive())
-                    continue;
-
-                if (winningParty == 0)
-                {
-                    winningParty = actor.Party;
-                }
-                else if (winningParty != actor.Party)
-                {
-                    return false;
-                }
-            }
-
-            return winningParty != 0u;
-        }
-
-        private void IncrementInitiative()
-        {
-            foreach (IInitiativePair tuple in _currentGameState.RawInitiativeOrder)
-            {
-                if (tuple is InitiativePair mutableTuple)
-                {
-                    mutableTuple.Initiative += tuple.Entity.GetInitiative();
-                }
-            }
-
-            _currentGameState.RawInitiativeOrder.Sort((lhs, rhs) => rhs.Initiative.CompareTo(lhs.Initiative));
-        }
-
-        private InitiativePair GetNextEntity()
-        {
-            while (_currentGameState.InitiativeOrder[0].Initiative < 100f)
-            {
-                IncrementInitiative();
-            }
-
-            return _currentGameState.InitiativeOrder[0] as InitiativePair;
         }
 
         private void OnActionSelected(uint actionId)
