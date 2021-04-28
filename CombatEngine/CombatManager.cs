@@ -20,8 +20,6 @@ namespace SadPumpkin.Util.CombatEngine
     /// </summary>
     public class CombatManager
     {
-        private const float INITIATIVE_THRESHOLD = 100f;
-        
         private static readonly Random RANDOM = new Random();
 
         private readonly float _targetInitiative = 100f;
@@ -105,7 +103,7 @@ namespace SadPumpkin.Util.CombatEngine
             _currentGameState.State = CombatState.Active;
 
             uint winningParty = 0u;
-            while (!_winningPartyProvider.TryGetWinner(_parties, out winningParty))
+            while (!GetWinningPartyId(out winningParty))
             {
                 // Get Active Entity
                 IInitiativeActor activeEntity = _initiativeQueue.GetNext();
@@ -159,12 +157,6 @@ namespace SadPumpkin.Util.CombatEngine
 
                     selectedAction.Cost.Pay(selectedAction.Source, selectedAction.ActionSource);
                     selectedAction.Effect.Apply(selectedAction.Source, selectedAction.Targets);
-                }
-
-                // Modify active actor's initiative
-                if (activeInitPair is IWritableInitiativePair writableInitiativePair)
-                {
-                    _initiativeQueue.Update(activeEntity, -_targetInitiative);
                 }
 
                 // Update GameState with Effects of Action
