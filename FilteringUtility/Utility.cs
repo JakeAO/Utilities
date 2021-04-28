@@ -94,7 +94,7 @@ namespace SadPumpkin.Util.FilteringUtility
 
                     foreach (string propertyFilterValue in propertyFilter.Value)
                     {
-                        if (propertyValue.ToString().Contains(propertyFilterValue, StringComparison.InvariantCultureIgnoreCase))
+                        if (propertyValue.ToString().Contains(propertyFilterValue))//, StringComparison.InvariantCultureIgnoreCase))
                         {
                             failOut = true;
                             break;
@@ -110,7 +110,7 @@ namespace SadPumpkin.Util.FilteringUtility
 
                 foreach (var generalFilter in CurrentFilter.GeneralFilters)
                 {
-                    if (entry.CombinedString.Contains(generalFilter, StringComparison.InvariantCultureIgnoreCase))
+                    if (entry.CombinedString.Contains(generalFilter))//, StringComparison.InvariantCultureIgnoreCase))
                     {
                         failOut = true;
                         break;

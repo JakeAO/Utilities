@@ -1,0 +1,5 @@
+var namespace_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_effect_calculators =
+[
+    [ "IEffectCalc", "interface_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_effect_calculators_1_1_i_effect_calc.html", "interface_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_effect_calculators_1_1_i_effect_calc" ],
+    [ "NoEffect", "class_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_effect_calculators_1_1_no_effect.html", "class_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_effect_calculators_1_1_no_effect" ]
+];

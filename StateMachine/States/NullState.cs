@@ -1,4 +1,6 @@
-﻿namespace SadPumpkin.Util.StateMachine.States
+﻿using SadPumpkin.Util.Context;
+
+namespace SadPumpkin.Util.StateMachine.States
 {
     public class NullState : IState
     {
@@ -8,15 +10,15 @@
         {
         }
 
-        public void PerformSetup(Context.Context context, IState previousState)
+        public void PerformSetup(IContext context, IState previousState)
         {
         }
 
-        public void PerformContent(Context.Context context)
+        public void PerformContent(IContext context)
         {
         }
 
-        public void PerformTeardown(Context.Context context, IState nextState)
+        public void PerformTeardown(IContext context, IState nextState)
         {
         }
     }

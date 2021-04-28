@@ -1,0 +1,8 @@
+digraph "Graphical Class Hierarchy"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node0 [label="SadPumpkin.Util.CombatEngine.\lAction.IAction",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$interface_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_action_1_1_i_action.html",tooltip="Action presented to a CharacterController during an Actor's turn."];
+}

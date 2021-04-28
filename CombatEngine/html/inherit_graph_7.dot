@@ -1,0 +1,12 @@
+digraph "Graphical Class Hierarchy"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node0 [label="SadPumpkin.Util.CombatEngine.\lICopyable\< IInitiativeActor \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$interface_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_i_copyable.html",tooltip=" "];
+  Node0 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 [label="SadPumpkin.Util.CombatEngine.\lActor.IInitiativeActor",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$interface_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_actor_1_1_i_initiative_actor.html",tooltip="Interface which defines the base Actor for combat."];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="SadPumpkin.Util.CombatEngine.\lActor.ITargetableActor",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$interface_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_actor_1_1_i_targetable_actor.html",tooltip="Interface which defines an Actor that can be targeted by an Action."];
+}

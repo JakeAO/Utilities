@@ -6,57 +6,67 @@ using System.Threading.Tasks;
 using SadPumpkin.Util.CombatEngine.Action;
 using SadPumpkin.Util.CombatEngine.Actor;
 using SadPumpkin.Util.CombatEngine.CharacterControllers;
-using SadPumpkin.Util.CombatEngine.EquipMap;
 using SadPumpkin.Util.CombatEngine.GameState;
-using SadPumpkin.Util.CombatEngine.InitiativeSorter;
+using SadPumpkin.Util.CombatEngine.InitiativeQueue;
 using SadPumpkin.Util.CombatEngine.Party;
 using SadPumpkin.Util.CombatEngine.Signals;
-using SadPumpkin.Util.CombatEngine.StateChangeEvents;
-using SadPumpkin.Util.CombatEngine.StatMap;
-using SadPumpkin.Util.CombatEngine.WinningPartyProvider;
 using SadPumpkin.Util.Signals;
 
 namespace SadPumpkin.Util.CombatEngine
 {
+    /// <summary>
+    /// Object which handles the execution of turn-based combat when provided with appropriate
+    /// implementations of certain interfaces.
+    /// </summary>
     public class CombatManager
     {
         private const float INITIATIVE_THRESHOLD = 100f;
         
         private static readonly Random RANDOM = new Random();
 
-        private readonly IWinningPartyProvider _winningPartyProvider;
-        private readonly IInitiativeSorter _initiativeSorter;
-        
+        private readonly float _targetInitiative = 100f;
         private readonly List<IParty> _parties = new List<IParty>(2);
         private readonly List<ITargetableActor> _allTargets = new List<ITargetableActor>(10);
         private readonly Dictionary<uint, ICharacterController> _controllerByPartyId = new Dictionary<uint, ICharacterController>(2);
+        private readonly IStandardActionGenerator _standardActionGenerator;
+        private readonly IInitiativeQueue _initiativeQueue = null;
 
         private GameState.GameState _previousGameState = null;
         private GameState.GameState _currentGameState = null;
-        
+
         private uint? _pendingSelectedActionId = null;
 
         public IGameState CurrentGameState => _currentGameState;
         public uint? WinningPartyId { get; private set; }
 
-        public ISignal<IGameState, IReadOnlyList<IStateChangeEvent>> GameStateUpdated { get; }
+        public ISignal<IGameState> GameStateUpdated { get; }
         public ISignal<uint> CombatComplete { get; }
-        
+
+        /// <summary>
+        /// Construct a new CombatManager object with the provided data.
+        /// </summary>
+        /// <param name="parties">All participants in combat, grouped by their Party affiliation.</param>
+        /// <param name="standardActionGenerator">Supplier of standard actions which all Actors have access to.</param>
+        /// <param name="targetInitiative">Initiative value which an Actor much reach in order to become the active Actor.</param>
+        /// <param name="gameStateUpdatedSignal">Signal fired when the CombatManager updates the current GameState.</param>
+        /// <param name="combatCompleteSignal">Signal fired when combat is complete (only one Party has living Actors).</param>
         public CombatManager(
-            IWinningPartyProvider winningPartyProvider,
-            IInitiativeSorter initiativeSorter,
-            IReadOnlyCollection<IParty> parties, 
-            ISignal<IGameState, IReadOnlyList<IStateChangeEvent>> gameStateUpdatedSignal, 
+            IReadOnlyCollection<IParty> parties,
+            IStandardActionGenerator standardActionGenerator,
+            float targetInitiative,
+            ISignal<IGameState> gameStateUpdatedSignal,
             ISignal<uint> combatCompleteSignal)
         {
-            _winningPartyProvider = winningPartyProvider ?? new OneAliveWinningPartyProvider();
-            _initiativeSorter = initiativeSorter ?? new ThresholdInitiativeSorter(INITIATIVE_THRESHOLD);
-            
+            _targetInitiative = targetInitiative;
+            _initiativeQueue = new InitiativeQueue.InitiativeQueue(_targetInitiative);
+
+            _standardActionGenerator = standardActionGenerator ?? new NullStandardActionGenerator();
+
             GameStateUpdated = gameStateUpdatedSignal ?? new GameStateUpdated();
             CombatComplete = combatCompleteSignal ?? new CombatComplete();
 
-            _currentGameState = new GameState.GameState(GameState.GameState.NextId, CombatState.Invalid, null, new List<IInitiativePair>(10));
-            
+            _currentGameState = new GameState.GameState(GameState.GameState.NextId, CombatState.Invalid, null, new List<IInitiativeActor>(0));
+
             _parties.AddRange(parties);
             foreach (IParty party in parties)
             {
@@ -66,26 +76,39 @@ namespace SadPumpkin.Util.CombatEngine
                     if (actor is ITargetableActor targetableActor)
                         _allTargets.Add(targetableActor);
 
-                    _currentGameState.RawInitiativeOrder.Add(new InitiativePair(actor, (float) RANDOM.NextDouble() * INITIATIVE_THRESHOLD * 0.9f));
+                    _initiativeQueue.Add(actor, (float) (RANDOM.NextDouble() * 90));
                 }
             }
 
             SendOutgoingGameState();
+        }
 
-            Task.Run(CombatThread);
+        /// <summary>
+        /// Begin executing the combat sequence.
+        /// </summary>
+        /// <param name="autoThread">Should the CombatManager create it's own thread to run the combat sequence on.</param>
+        public void Start(bool autoThread)
+        {
+            if (autoThread)
+            {
+                Task.Run(CombatThread);
+            }
+            else
+            {
+                CombatThread();
+            }
         }
 
         private void CombatThread()
         {
             WinningPartyId = null;
             _currentGameState.State = CombatState.Active;
-            
+
             uint winningParty = 0u;
             while (!_winningPartyProvider.TryGetWinner(_parties, out winningParty))
             {
                 // Get Active Entity
-                IInitiativePair activeInitPair = _initiativeSorter.GetNext(_currentGameState.InitiativeOrder);
-                IInitiativeActor activeEntity = activeInitPair.Entity;
+                IInitiativeActor activeEntity = _initiativeQueue.GetNext();
 
                 // Update GameState with ActiveEntity
                 _previousGameState = (GameState.GameState) _currentGameState.Copy();
@@ -100,10 +123,17 @@ namespace SadPumpkin.Util.CombatEngine
                 float initiativeCost = -100f;
                 if (activeEntity.IsAlive())
                 {
+                    // Get Controller and Entity Actions for Active Entity
                     ICharacterController controller = _controllerByPartyId[activeEntity.Party];
                     Dictionary<uint, IAction> actionsForEntity = activeEntity
                         .GetAllActions(_allTargets)
                         .ToDictionary(x => x.Id);
+
+                    // Add Standard Entity Actions
+                    foreach (IAction standardAction in _standardActionGenerator.GetActions(activeEntity))
+                    {
+                        actionsForEntity[standardAction.Id] = standardAction;
+                    }
 
                     // Wait for valid response
                     IAction selectedAction;
@@ -125,16 +155,16 @@ namespace SadPumpkin.Util.CombatEngine
                     } while (selectedAction == null || !selectedAction.Available);
 
                     // Apply effects of Action
-                    initiativeCost = -selectedAction.Ability.Speed;
+                    _initiativeQueue.Update(activeEntity, -selectedAction.Speed);
 
-                    selectedAction.Ability.Cost.Pay(selectedAction.Source);
-                    selectedAction.Ability.Effect.Apply(selectedAction.Source, selectedAction.Targets);
+                    selectedAction.Cost.Pay(selectedAction.Source, selectedAction.ActionSource);
+                    selectedAction.Effect.Apply(selectedAction.Source, selectedAction.Targets);
                 }
 
                 // Modify active actor's initiative
                 if (activeInitPair is IWritableInitiativePair writableInitiativePair)
                 {
-                    writableInitiativePair.IncrementInitiative(initiativeCost);
+                    _initiativeQueue.Update(activeEntity, -_targetInitiative);
                 }
 
                 // Update GameState with Effects of Action
@@ -157,82 +187,41 @@ namespace SadPumpkin.Util.CombatEngine
 
         private void SendOutgoingGameState()
         {
-            List<IStateChangeEvent> changeEvents = new List<IStateChangeEvent>(10);
-
-            if (_previousGameState != null)
-            {
-                changeEvents.AddRange(GetDiffGameStateChanges(_previousGameState, _currentGameState));
-            }
-
-            GameStateUpdated.Fire(_currentGameState.Copy(), changeEvents);
+            var copiedGameState = new GameState.GameState(
+                _currentGameState.Id,
+                _currentGameState.State,
+                _currentGameState.ActiveActor?.Copy(),
+                _initiativeQueue.GetPreview(5));
+            GameStateUpdated.Fire(copiedGameState);
         }
 
-        private IReadOnlyList<IStateChangeEvent> GetDiffGameStateChanges(IGameState oldState, IGameState newState)
+        private bool GetWinningPartyId(out uint winningParty)
         {
-            List<IStateChangeEvent> stateChangeEvents = new List<IStateChangeEvent>(1);
+            winningParty = 0u;
 
-            // State
-            if (oldState.State != newState.State)
+            foreach (IParty party in _parties)
             {
-                stateChangeEvents.Add(new CombatStateChangedEvent(oldState.Id, newState.Id, oldState.State, newState.State));
-            }
-
-            // InitiativeActors
-            foreach (var newPair in newState.InitiativeOrder)
-            {
-                var oldPair = oldState.InitiativeOrder.First(x => x.Entity.Id == newPair.Entity.Id);
-
-                stateChangeEvents.AddRange(GetDiffInitiativePairChanges(oldState.Id, newState.Id, oldPair, newPair));
-            }
-
-            return stateChangeEvents;
-        }
-
-        private IEnumerable<IStateChangeEvent> GetDiffInitiativePairChanges(
-            uint oldStateId, uint newStateId,
-            IInitiativePair oldInitPair, IInitiativePair newInitPair)
-        {
-            if (oldInitPair.Entity is IPlayerCharacterActor oldPlayerCharacter &&
-                newInitPair.Entity is IPlayerCharacterActor newPlayerCharacter)
-            {
-                foreach (EquipmentSlot equipmentSlot in Enum.GetValues(typeof(EquipmentSlot)))
+                foreach (IInitiativeActor actor in party.Actors)
                 {
-                    if (oldPlayerCharacter.Equipment[equipmentSlot]?.Id != newPlayerCharacter.Equipment[equipmentSlot]?.Id)
+                    if (actor == null)
+                        continue;
+                    if (!actor.IsAlive())
+                        continue;
+
+                    if (winningParty == 0)
                     {
-                        yield return new CharacterEquipmentChangedEvent(
-                            oldStateId, newStateId,
-                            oldPlayerCharacter,
-                            equipmentSlot, oldPlayerCharacter.Equipment[equipmentSlot], newPlayerCharacter.Equipment[equipmentSlot]);
+                        winningParty = actor.Party;
+                        break;
+                    }
+
+                    if (winningParty != actor.Party)
+                    {
+                        return false;
                     }
                 }
             }
 
-            if (oldInitPair.Entity is ICharacterActor oldCharacter &&
-                newInitPair.Entity is ICharacterActor newCharacter)
-            {
-                foreach (StatType statType in Enum.GetValues(typeof(StatType)))
-                {
-                    if (oldCharacter.Stats[statType] != newCharacter.Stats[statType])
-                    {
-                        yield return new CharacterStatChangedEvent(
-                            oldStateId, newStateId,
-                            oldCharacter,
-                            statType, oldCharacter.Stats[statType], newCharacter.Stats[statType]);
-                    }
-                }
-            }
-
-            if (oldInitPair.Entity is IInitiativeActor oldActor &&
-                newInitPair.Entity is IInitiativeActor newActor)
-            {
-                if (oldActor.IsAlive() != newActor.IsAlive())
-                {
-                    yield return new ActorAlivenessChangedEvent(
-                        oldStateId, newStateId,
-                        oldActor,
-                        oldActor.IsAlive(), newActor.IsAlive());
-                }
-            }
+            return winningParty != 0u;
         }
 
         private void OnActionSelected(uint actionId)

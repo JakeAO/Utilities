@@ -1,0 +1,5 @@
+var namespace_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_initiative_queue =
+[
+    [ "IInitiativeQueue", "interface_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_initiative_queue_1_1_i_initiative_queue.html", "interface_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_initiative_queue_1_1_i_initiative_queue" ],
+    [ "InitiativeQueue", "class_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_initiative_queue_1_1_initiative_queue.html", "class_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_initiative_queue_1_1_initiative_queue" ]
+];

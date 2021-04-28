@@ -1,5 +1,8 @@
 namespace SadPumpkin.Util.CombatEngine
 {
+    /// <summary>
+    /// State of the combat manager.
+    /// </summary>
     public enum CombatState
     {
         Invalid = 0,

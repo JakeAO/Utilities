@@ -1,0 +1,5 @@
+var searchData=
+[
+  ['initiativequeue_211',['InitiativeQueue',['../class_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_initiative_queue_1_1_initiative_queue.html#add69d2e710471008a8cf3d3992b3c54a',1,'SadPumpkin.Util.CombatEngine.InitiativeQueue.InitiativeQueue.InitiativeQueue(float targetValue)'],['../class_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_initiative_queue_1_1_initiative_queue.html#a50fbe3c1e5cd9dd9584ee2dfb2704283',1,'SadPumpkin.Util.CombatEngine.InitiativeQueue.InitiativeQueue.InitiativeQueue(float targetValue, IReadOnlyCollection&lt; IInitiativeActor &gt; actors)'],['../class_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_initiative_queue_1_1_initiative_queue.html#a5852f3c43e0a99819da9094f3938528d',1,'SadPumpkin.Util.CombatEngine.InitiativeQueue.InitiativeQueue.InitiativeQueue(float targetValue, IReadOnlyCollection&lt;(IInitiativeActor actor, float initialValue)&gt; actors)']]],
+  ['isalive_212',['IsAlive',['../interface_sad_pumpkin_1_1_util_1_1_combat_engine_1_1_actor_1_1_i_initiative_actor.html#ae3c3049df0dee98152bb0b335d65f645',1,'SadPumpkin::Util::CombatEngine::Actor::IInitiativeActor']]]
+];
