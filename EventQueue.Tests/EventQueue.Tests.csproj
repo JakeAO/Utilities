@@ -4,12 +4,12 @@
     <PropertyGroup>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
         <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-        <ProjectGuid>{AE4FE6F4-D4A6-4B69-B808-5283C345CED2}</ProjectGuid>
+        <ProjectGuid>{FEF00154-DE45-420C-A8CF-817110679A7A}</ProjectGuid>
         <ProjectTypeGuids>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
         <OutputType>Library</OutputType>
         <AppDesignerFolder>Properties</AppDesignerFolder>
-        <RootNamespace>SadPumpkin.Util.CombatEngine.Tests</RootNamespace>
-        <AssemblyName>CombatEngine.Tests</AssemblyName>
+        <RootNamespace>SadPumpkin.Util.EventQueue.Tests</RootNamespace>
+        <AssemblyName>EventQueue.Tests</AssemblyName>
         <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
     </PropertyGroup>
@@ -42,21 +42,13 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="CombatEngineTests.cs" />
+        <Compile Include="Tests.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\CombatEngine\CombatEngine.csproj">
-        <Project>{fab4cc9b-c72f-4d13-9005-08b1550aa17b}</Project>
-        <Name>CombatEngine</Name>
-      </ProjectReference>
       <ProjectReference Include="..\EventQueue\EventQueue.csproj">
         <Project>{83da284a-175d-4f3f-ae0c-3753f377dd84}</Project>
         <Name>EventQueue</Name>
-      </ProjectReference>
-      <ProjectReference Include="..\Signals\Signals.csproj">
-        <Project>{e72557cd-3fa4-4aed-80a4-dc961488642a}</Project>
-        <Name>Signals</Name>
       </ProjectReference>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

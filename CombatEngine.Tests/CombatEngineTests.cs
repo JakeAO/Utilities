@@ -3,10 +3,14 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using SadPumpkin.Util.CombatEngine.Action;
 using SadPumpkin.Util.CombatEngine.Actor;
+using SadPumpkin.Util.CombatEngine.ActorChangeCalculator;
 using SadPumpkin.Util.CombatEngine.CharacterControllers;
 using SadPumpkin.Util.CombatEngine.CostCalculators;
 using SadPumpkin.Util.CombatEngine.EffectCalculators;
+using SadPumpkin.Util.CombatEngine.Initiatives;
 using SadPumpkin.Util.CombatEngine.Party;
+using SadPumpkin.Util.CombatEngine.WinningPartyCalculator;
+using SadPumpkin.Util.Events;
 
 namespace SadPumpkin.Util.CombatEngine.Tests
 {
@@ -99,9 +103,10 @@ namespace SadPumpkin.Util.CombatEngine.Tests
                     },
                 },
                 new NullStandardActionGenerator(),
-                100f,
-                null,
-                null);
+                new AnyAliveWinningPartyCalculator(),
+                new NullActorChangeCalculator(),
+                new InitiativeQueue(100),
+                new EventQueue());
 
             Assert.IsNotNull(combatManager);
             Assert.IsInstanceOf<CombatManager>(combatManager);
@@ -141,9 +146,10 @@ namespace SadPumpkin.Util.CombatEngine.Tests
                     },
                 },
                 new NullStandardActionGenerator(),
-                100f,
-                null,
-                null);
+                new AnyAliveWinningPartyCalculator(),
+                new NullActorChangeCalculator(),
+                new InitiativeQueue(100),
+                new EventQueue());
 
             Task.Run(() => combatManager.Start(false));
 
@@ -184,9 +190,10 @@ namespace SadPumpkin.Util.CombatEngine.Tests
                     },
                 },
                 new NullStandardActionGenerator(),
-                100f,
-                null,
-                null);
+                new AnyAliveWinningPartyCalculator(),
+                new NullActorChangeCalculator(),
+                new InitiativeQueue(100),
+                new EventQueue());
 
             combatManager.Start(true);
 

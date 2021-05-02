@@ -5,12 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using SadPumpkin.Util.CombatEngine.Action;
 using SadPumpkin.Util.CombatEngine.Actor;
+using SadPumpkin.Util.CombatEngine.ActorChangeCalculator;
 using SadPumpkin.Util.CombatEngine.CharacterControllers;
-using SadPumpkin.Util.CombatEngine.GameState;
-using SadPumpkin.Util.CombatEngine.InitiativeQueue;
+using SadPumpkin.Util.CombatEngine.Events;
+using SadPumpkin.Util.CombatEngine.Initiatives;
 using SadPumpkin.Util.CombatEngine.Party;
-using SadPumpkin.Util.CombatEngine.Signals;
-using SadPumpkin.Util.Signals;
+using SadPumpkin.Util.CombatEngine.WinningPartyCalculator;
+using SadPumpkin.Util.Events;
 
 namespace SadPumpkin.Util.CombatEngine
 {
@@ -20,50 +21,49 @@ namespace SadPumpkin.Util.CombatEngine
     /// </summary>
     public class CombatManager
     {
+        private const int ACTOR_CHANGE_SLEEP_TIME = 1000;
+        private const int ACTION_REQUEST_SLEEP_TIME = 250;
+
         private static readonly Random RANDOM = new Random();
 
-        private readonly float _targetInitiative = 100f;
         private readonly List<IParty> _parties = new List<IParty>(2);
         private readonly List<ITargetableActor> _allTargets = new List<ITargetableActor>(10);
         private readonly Dictionary<uint, ICharacterController> _controllerByPartyId = new Dictionary<uint, ICharacterController>(2);
+
         private readonly IStandardActionGenerator _standardActionGenerator;
+        private readonly IWinningPartyCalculator _winningPartyCalculator;
+        private readonly IActorChangeCalculator _actorChangeCalculator;
         private readonly IInitiativeQueue _initiativeQueue = null;
+        private readonly IEventQueue _eventQueue = null;
 
-        private GameState.GameState _previousGameState = null;
-        private GameState.GameState _currentGameState = null;
-
+        private CombatState _combatState = CombatState.Invalid;
         private uint? _pendingSelectedActionId = null;
 
-        public IGameState CurrentGameState => _currentGameState;
-        public uint? WinningPartyId { get; private set; }
-
-        public ISignal<IGameState> GameStateUpdated { get; }
-        public ISignal<uint> CombatComplete { get; }
+        public IInitiativeQueue InitiativeQueue => _initiativeQueue;
+        public IEventQueue EventData => _eventQueue;
 
         /// <summary>
         /// Construct a new CombatManager object with the provided data.
         /// </summary>
         /// <param name="parties">All participants in combat, grouped by their Party affiliation.</param>
         /// <param name="standardActionGenerator">Supplier of standard actions which all Actors have access to.</param>
-        /// <param name="targetInitiative">Initiative value which an Actor much reach in order to become the active Actor.</param>
-        /// <param name="gameStateUpdatedSignal">Signal fired when the CombatManager updates the current GameState.</param>
-        /// <param name="combatCompleteSignal">Signal fired when combat is complete (only one Party has living Actors).</param>
+        /// <param name="winningPartyCalculator">Calculator for how CombatManager decides when combat is finished and which party won.</param>
+        /// <param name="actorChangeCalculator">Calculator for changes within an actor's properties.</param>
+        /// <param name="initiativeQueue">Implementation of an initiative queue for use in this combat session.</param>
+        /// <param name="eventQueue">Implementation of an event queue for use in this combat session.</param>
         public CombatManager(
             IReadOnlyCollection<IParty> parties,
             IStandardActionGenerator standardActionGenerator,
-            float targetInitiative,
-            ISignal<IGameState> gameStateUpdatedSignal,
-            ISignal<uint> combatCompleteSignal)
+            IWinningPartyCalculator winningPartyCalculator,
+            IActorChangeCalculator actorChangeCalculator,
+            IInitiativeQueue initiativeQueue,
+            IEventQueue eventQueue)
         {
-            _targetInitiative = targetInitiative;
-            _initiativeQueue = new InitiativeQueue.InitiativeQueue(_targetInitiative);
-
             _standardActionGenerator = standardActionGenerator ?? new NullStandardActionGenerator();
-
-            GameStateUpdated = gameStateUpdatedSignal ?? new GameStateUpdated();
-            CombatComplete = combatCompleteSignal ?? new CombatComplete();
-
-            _currentGameState = new GameState.GameState(GameState.GameState.NextId, CombatState.Invalid, null, new List<IInitiativeActor>(0));
+            _winningPartyCalculator = winningPartyCalculator ?? new AnyAliveWinningPartyCalculator();
+            _actorChangeCalculator = actorChangeCalculator ?? new NullActorChangeCalculator();
+            _initiativeQueue = initiativeQueue ?? new InitiativeQueue(100f);
+            _eventQueue = eventQueue ?? new EventQueue();
 
             _parties.AddRange(parties);
             foreach (IParty party in parties)
@@ -74,11 +74,13 @@ namespace SadPumpkin.Util.CombatEngine
                     if (actor is ITargetableActor targetableActor)
                         _allTargets.Add(targetableActor);
 
-                    _initiativeQueue.Add(actor, (float) (RANDOM.NextDouble() * 90));
+                    float startingInitiative = (float) RANDOM.NextDouble() * _initiativeQueue.InitiativeThreshold * 90f;
+                    _initiativeQueue.Add(actor, startingInitiative);
                 }
             }
 
-            SendOutgoingGameState();
+            _combatState = CombatState.Init;
+            _eventQueue.EnqueueEvent(new CombatStateChangedEvent(_combatState));
         }
 
         /// <summary>
@@ -99,30 +101,31 @@ namespace SadPumpkin.Util.CombatEngine
 
         private void CombatThread()
         {
-            WinningPartyId = null;
-            _currentGameState.State = CombatState.Active;
+            _combatState = CombatState.Active;
+            _eventQueue.EnqueueEvent(new CombatStateChangedEvent(_combatState));
+            _eventQueue.EnqueueEvent(new CombatStartedEvent());
 
-            uint winningParty = 0u;
-            while (!GetWinningPartyId(out winningParty))
+            uint winningParty = LoopUntilCombatComplete();
+
+            _combatState = CombatState.Completed;
+            _eventQueue.EnqueueEvent(new CombatStateChangedEvent(_combatState));
+            _eventQueue.EnqueueEvent(new CombatCompletedEvent(winningParty));
+        }
+
+        private uint LoopUntilCombatComplete()
+        {
+            uint winningParty;
+            while (!_winningPartyCalculator.GetWinningPartyId(_parties, out winningParty))
             {
                 // Get Active Entity
                 IInitiativeActor activeEntity = _initiativeQueue.GetNext();
-
-                // Update GameState with ActiveEntity
-                _previousGameState = (GameState.GameState) _currentGameState.Copy();
-                _currentGameState.ActiveActor = activeEntity;
-                _currentGameState.Id = GameState.GameState.NextId;
-                SendOutgoingGameState();
-
-                _previousGameState = (GameState.GameState) _currentGameState.Copy();
-                _currentGameState.Id = GameState.GameState.NextId;
+                _eventQueue.EnqueueEvent(new ActiveActorChangedEvent(activeEntity.Id));
 
                 // Prompt Action
-                float initiativeCost = -100f;
+                float initiativeReduction = -_initiativeQueue.InitiativeThreshold;
                 if (activeEntity.IsAlive())
                 {
                     // Get Controller and Entity Actions for Active Entity
-                    ICharacterController controller = _controllerByPartyId[activeEntity.Party];
                     Dictionary<uint, IAction> actionsForEntity = activeEntity
                         .GetAllActions(_allTargets)
                         .ToDictionary(x => x.Id);
@@ -133,92 +136,101 @@ namespace SadPumpkin.Util.CombatEngine
                         actionsForEntity[standardAction.Id] = standardAction;
                     }
 
-                    // Wait for valid response
-                    IAction selectedAction;
-                    do
-                    {
-                        // Send Actions to Controller
-                        _pendingSelectedActionId = null;
-                        controller.SelectAction(activeEntity, actionsForEntity, OnActionSelected);
+                    // Send options and wait for valid response
+                    IAction selectedAction = SendActionsAndWaitForResponse(activeEntity, _controllerByPartyId[activeEntity.Party], actionsForEntity);
 
-                        // Wait for Controller response
-                        do
-                        {
-                            Thread.Sleep(250);
-                        } while (!_pendingSelectedActionId.HasValue);
+                    // Set initiative cost
+                    initiativeReduction = -selectedAction.Speed;
 
-                        // Validate response
-                        actionsForEntity.TryGetValue(_pendingSelectedActionId.Value, out selectedAction);
+                    // Inform event queue we're applying an action
+                    _eventQueue.EnqueueEvent(new ActorActionTakenEvent(selectedAction));
 
-                    } while (selectedAction == null || !selectedAction.Available);
+                    // Pay cost(s) for Action
+                    _eventQueue.EnqueueEvents(ApplyActionCost(selectedAction, _actorChangeCalculator));
 
-                    // Apply effects of Action
-                    _initiativeQueue.Update(activeEntity, -selectedAction.Speed);
-
-                    selectedAction.Cost.Pay(selectedAction.Source, selectedAction.ActionSource);
-                    selectedAction.Effect.Apply(selectedAction.Source, selectedAction.Targets);
+                    // Apply effect(s) for Action
+                    _eventQueue.EnqueueEvents(ApplyActionEffect(selectedAction, _actorChangeCalculator));
                 }
 
-                // Update GameState with Effects of Action
-                _currentGameState.ActiveActor = null;
-                SendOutgoingGameState();
+                // Update active entity's initiative value in the queue
+                _initiativeQueue.Update(activeEntity, initiativeReduction);
 
                 // Rest for a bit
-                Thread.Sleep(1000);
+                Thread.Sleep(ACTOR_CHANGE_SLEEP_TIME);
             }
 
-            _previousGameState = (GameState.GameState) _currentGameState.Copy();
-            _currentGameState.Id = GameState.GameState.NextId;
-            _currentGameState.State = CombatState.Completed;
-
-            WinningPartyId = winningParty;
-            SendOutgoingGameState();
-
-            CombatComplete.Fire(winningParty);
+            return winningParty;
         }
 
-        private void SendOutgoingGameState()
+        private IAction SendActionsAndWaitForResponse(
+            IInitiativeActor activeEntity,
+            ICharacterController activeController,
+            IReadOnlyDictionary<uint, IAction> availableActions)
         {
-            var copiedGameState = new GameState.GameState(
-                _currentGameState.Id,
-                _currentGameState.State,
-                _currentGameState.ActiveActor?.Copy(),
-                _initiativeQueue.GetPreview(5));
-            GameStateUpdated.Fire(copiedGameState);
-        }
-
-        private bool GetWinningPartyId(out uint winningParty)
-        {
-            winningParty = 0u;
-
-            foreach (IParty party in _parties)
+            IAction selectedAction;
+            do
             {
-                foreach (IInitiativeActor actor in party.Actors)
+                // Send Actions to Controller
+                _pendingSelectedActionId = null;
+                activeController.SelectAction(activeEntity, availableActions, OnActionSelected);
+
+                // Wait for Controller response
+                do
                 {
-                    if (actor == null)
-                        continue;
-                    if (!actor.IsAlive())
-                        continue;
+                    Thread.Sleep(ACTION_REQUEST_SLEEP_TIME);
+                } while (!_pendingSelectedActionId.HasValue);
 
-                    if (winningParty == 0)
-                    {
-                        winningParty = actor.Party;
-                        break;
-                    }
+                // Validate response
+                availableActions.TryGetValue(_pendingSelectedActionId.Value, out selectedAction);
 
-                    if (winningParty != actor.Party)
-                    {
-                        return false;
-                    }
-                }
-            }
+                _pendingSelectedActionId = null;
 
-            return winningParty != 0u;
+            } while (selectedAction == null || !selectedAction.Available);
+
+            return selectedAction;
         }
 
         private void OnActionSelected(uint actionId)
         {
             _pendingSelectedActionId = actionId;
+        }
+
+        private static IEnumerable<ICombatEventData> ApplyActionCost(IAction selectedAction, IActorChangeCalculator actorChangeCalculator)
+        {
+            // Pre-apply copy
+            IInitiativeActor sourceBeforeCost = selectedAction.Source.Copy();
+
+            // Apply
+            selectedAction.Cost.Pay(selectedAction.Source, selectedAction.ActionSource);
+
+            // Post-apply comparison
+            return actorChangeCalculator.GetChangeEvents(sourceBeforeCost, selectedAction.Source);
+        }
+
+        private static IEnumerable<ICombatEventData> ApplyActionEffect(IAction selectedAction, IActorChangeCalculator actorChangeCalculator)
+        {
+            // Pre-apply copies
+            IInitiativeActor sourceBeforeEffect = selectedAction.Source.Copy();
+            IEnumerable<IInitiativeActor> targetsBeforeEffect = selectedAction.Targets.Select(t => t.Copy());
+
+            // Apply
+            selectedAction.Effect.Apply(selectedAction.Source, selectedAction.Targets);
+
+            // Post-apply comparison
+            foreach (ICombatEventData eventData in actorChangeCalculator.GetChangeEvents(sourceBeforeEffect, selectedAction.Source))
+            {
+                yield return eventData;
+            }
+
+            foreach (var beforeAfterPair in targetsBeforeEffect.ToDictionary(
+                x => x,
+                x => selectedAction.Targets.First(y => y.Id == x.Id)))
+            {
+                foreach (ICombatEventData combatEventData in actorChangeCalculator.GetChangeEvents(beforeAfterPair.Key, beforeAfterPair.Value))
+                {
+                    yield return combatEventData;
+                }
+            }
         }
     }
 }

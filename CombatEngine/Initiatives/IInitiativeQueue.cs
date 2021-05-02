@@ -1,13 +1,18 @@
 using System.Collections.Generic;
 using SadPumpkin.Util.CombatEngine.Actor;
 
-namespace SadPumpkin.Util.CombatEngine.InitiativeQueue
+namespace SadPumpkin.Util.CombatEngine.Initiatives
 {
     /// <summary>
     /// Interface defining an ordered collection of Actors based on their relative initiative values.
     /// </summary>
     public interface IInitiativeQueue
     {
+        /// <summary>
+        /// Get this Queue's initiative threshold.
+        /// </summary>
+        float InitiativeThreshold { get; }
+        
         /// <summary>
         /// Get the next Actor in initiative queue.
         /// </summary>

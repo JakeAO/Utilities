@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using SadPumpkin.Util.CombatEngine.Actor;
 
-namespace SadPumpkin.Util.CombatEngine.InitiativeQueue
+namespace SadPumpkin.Util.CombatEngine.Initiatives
 {
     /// <summary>
     /// Implementation of an initiative queue.
@@ -88,6 +88,11 @@ namespace SadPumpkin.Util.CombatEngine.InitiativeQueue
         }
 
         /// <summary>
+        /// Get this Queue's initiative threshold.
+        /// </summary>
+        public float InitiativeThreshold => _targetValue;
+
+        /// <summary>
         /// Get the next Actor in initiative queue.
         /// </summary>
         /// <returns>The next Actor, or null if the collection is empty.</returns>
@@ -96,12 +101,12 @@ namespace SadPumpkin.Util.CombatEngine.InitiativeQueue
             if (_queue.Count == 0)
                 return null;
 
+            SortQueue(_queue);
             if (_queue[0].Initiative < _targetValue)
                 IncrementQueue(_queue, _targetValue);
 
             return _queue[0].Actor;
         }
-
 
         /// <summary>
         /// Add a new Actor to the initiative queue.
@@ -120,7 +125,6 @@ namespace SadPumpkin.Util.CombatEngine.InitiativeQueue
             _queue.Add(new InitPair(actor, initialValue));
             return true;
         }
-
 
         /// <summary>
         /// Remove an Actor from the initiative queue.
@@ -141,7 +145,6 @@ namespace SadPumpkin.Util.CombatEngine.InitiativeQueue
             return false;
         }
 
-
         /// <summary>
         /// Update an Actor's initiative value.
         /// </summary>
@@ -161,7 +164,6 @@ namespace SadPumpkin.Util.CombatEngine.InitiativeQueue
 
             return false;
         }
-
 
         /// <summary>
         /// Generate a preview of the upcoming initiative order.
