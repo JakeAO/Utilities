@@ -190,7 +190,7 @@ namespace SadPumpkin.Util.CombatEngine
             return selectedAction;
         }
 
-        private void OnActionSelected(uint actionId)
+        public void OnActionSelected(uint actionId)
         {
             _pendingSelectedActionId = actionId;
         }
