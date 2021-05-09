@@ -5,9 +5,9 @@ namespace SadPumpkin.Util.UXEventQueue
 {
     public class UXEventQueue : IUXEventQueue
     {
-        public event EventHandler<IUXEvent> EventEnqueued;
-        public event EventHandler<IUXEvent> EventCommenced;
-        public event EventHandler<IUXEvent> EventCompleted;
+        public event Action<IUXEvent> EventEnqueued;
+        public event Action<IUXEvent> EventCommenced;
+        public event Action<IUXEvent> EventCompleted;
 
         public IReadOnlyList<IUXEvent> PendingEvents => _pendingEvents;
         public IReadOnlyCollection<IUXEvent> RunningEvents => _runningEvents;
@@ -23,7 +23,7 @@ namespace SadPumpkin.Util.UXEventQueue
                 _pendingEvents.Add(uxEvent);
                 
                 // Fire off our own event
-                EventEnqueued?.Invoke(this, uxEvent);
+                EventEnqueued?.Invoke(uxEvent);
             }
         }
 
@@ -64,7 +64,7 @@ namespace SadPumpkin.Util.UXEventQueue
                     nextEventToRun.Completed += UXEvent_OnCompleted;
 
                     // Fire off our own event
-                    EventCommenced?.Invoke(this, nextEventToRun);
+                    EventCommenced?.Invoke(nextEventToRun);
                     
                     // Run event
                     nextEventToRun.Run();
@@ -76,7 +76,7 @@ namespace SadPumpkin.Util.UXEventQueue
             }
         }
 
-        private void UXEvent_OnCompleted(object sender, IUXEvent uxEvent)
+        private void UXEvent_OnCompleted(IUXEvent uxEvent)
         {
             // Remove from currently running list
             _runningEvents.Remove(uxEvent);
@@ -85,7 +85,7 @@ namespace SadPumpkin.Util.UXEventQueue
             uxEvent.Completed -= UXEvent_OnCompleted;
 
             // Fire off our own event
-            EventCompleted?.Invoke(this, uxEvent);
+            EventCompleted?.Invoke(uxEvent);
         }
     }
 }

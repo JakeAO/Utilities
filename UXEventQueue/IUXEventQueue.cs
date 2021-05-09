@@ -5,9 +5,9 @@ namespace SadPumpkin.Util.UXEventQueue
 {
     public interface IUXEventQueue
     {
-        event EventHandler<IUXEvent> EventEnqueued;
-        event EventHandler<IUXEvent> EventCommenced;
-        event EventHandler<IUXEvent> EventCompleted;
+        event Action<IUXEvent> EventEnqueued;
+        event Action<IUXEvent> EventCommenced;
+        event Action<IUXEvent> EventCompleted;
         
         IReadOnlyList<IUXEvent> PendingEvents { get; }
         IReadOnlyCollection<IUXEvent> RunningEvents { get; }

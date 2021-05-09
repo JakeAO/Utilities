@@ -10,8 +10,8 @@ namespace SadPumpkin.Util.UXEventQueue.Tests
     {
         private class TestUXEvent : IUpdateUXEvent
         {
-            public event EventHandler<IUXEvent> Commenced;
-            public event EventHandler<IUXEvent> Completed;
+            public event Action<IUXEvent> Commenced;
+            public event Action<IUXEvent> Completed;
 
             private float _delayTime = 0f;
 
@@ -24,11 +24,11 @@ namespace SadPumpkin.Util.UXEventQueue.Tests
 
             public void Run()
             {
-                Commenced?.Invoke(this, this);
+                Commenced?.Invoke(this);
 
                 if (_delayTime <= 0f)
                 {
-                    Completed?.Invoke(this, this);
+                    Completed?.Invoke(this);
                 }
             }
 
@@ -38,7 +38,7 @@ namespace SadPumpkin.Util.UXEventQueue.Tests
 
                 if (_delayTime <= 0f)
                 {
-                    Completed?.Invoke(this, this);
+                    Completed?.Invoke(this);
                 }
             }
         }
