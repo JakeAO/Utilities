@@ -10,6 +10,7 @@ using SadPumpkin.Util.CombatEngine.CharacterControllers;
 using SadPumpkin.Util.CombatEngine.Events;
 using SadPumpkin.Util.CombatEngine.Initiatives;
 using SadPumpkin.Util.CombatEngine.Party;
+using SadPumpkin.Util.CombatEngine.TurnController;
 using SadPumpkin.Util.CombatEngine.WinningPartyCalculator;
 using SadPumpkin.Util.Events;
 
@@ -21,8 +22,7 @@ namespace SadPumpkin.Util.CombatEngine
     /// </summary>
     public class CombatManager
     {
-        private const int ACTOR_CHANGE_SLEEP_TIME = 1000;
-        private const int ACTION_REQUEST_SLEEP_TIME = 250;
+        private const int ACTOR_CHANGE_SLEEP_TIME = 500;
 
         private static readonly Random RANDOM = new Random();
 
@@ -30,6 +30,7 @@ namespace SadPumpkin.Util.CombatEngine
         private readonly List<ITargetableActor> _allTargets = new List<ITargetableActor>(10);
         private readonly Dictionary<uint, ICharacterController> _controllerByPartyId = new Dictionary<uint, ICharacterController>(2);
 
+        private readonly ITurnController _turnController;
         private readonly IStandardActionGenerator _standardActionGenerator;
         private readonly IWinningPartyCalculator _winningPartyCalculator;
         private readonly IActorChangeCalculator _actorChangeCalculator;
@@ -37,7 +38,6 @@ namespace SadPumpkin.Util.CombatEngine
         private readonly IEventQueue _eventQueue = null;
 
         private CombatState _combatState = CombatState.Invalid;
-        private uint? _pendingSelectedActionId = null;
 
         public IInitiativeQueue InitiativeQueue => _initiativeQueue;
         public IEventQueue EventData => _eventQueue;
@@ -53,12 +53,14 @@ namespace SadPumpkin.Util.CombatEngine
         /// <param name="eventQueue">Implementation of an event queue for use in this combat session.</param>
         public CombatManager(
             IReadOnlyCollection<IParty> parties,
+            ITurnController turnController,
             IStandardActionGenerator standardActionGenerator,
             IWinningPartyCalculator winningPartyCalculator,
             IActorChangeCalculator actorChangeCalculator,
             IInitiativeQueue initiativeQueue,
             IEventQueue eventQueue)
         {
+            _turnController = turnController ?? new OneActionTurnController();
             _standardActionGenerator = standardActionGenerator ?? new NullStandardActionGenerator();
             _winningPartyCalculator = winningPartyCalculator ?? new AnyAliveWinningPartyCalculator();
             _actorChangeCalculator = actorChangeCalculator ?? new NullActorChangeCalculator();
@@ -122,77 +124,39 @@ namespace SadPumpkin.Util.CombatEngine
                 _eventQueue.EnqueueEvent(new ActiveActorChangedEvent(activeEntity.Id));
 
                 // Prompt Action
-                float initiativeReduction = -_initiativeQueue.InitiativeThreshold;
-                if (activeEntity.IsAlive())
+                if (!activeEntity.IsAlive())
                 {
-                    // Get Controller and Entity Actions for Active Entity
-                    Dictionary<uint, IAction> actionsForEntity = activeEntity
-                        .GetAllActions(_allTargets)
-                        .ToDictionary(x => x.Id);
-
-                    // Add Standard Entity Actions
-                    foreach (IAction standardAction in _standardActionGenerator.GetActions(activeEntity))
-                    {
-                        actionsForEntity[standardAction.Id] = standardAction;
-                    }
-
-                    // Send options and wait for valid response
-                    IAction selectedAction = SendActionsAndWaitForResponse(activeEntity, _controllerByPartyId[activeEntity.Party], actionsForEntity);
-
-                    // Set initiative cost
-                    initiativeReduction = -selectedAction.Speed;
-
-                    // Inform event queue we're applying an action
-                    _eventQueue.EnqueueEvent(new ActorActionTakenEvent(selectedAction));
-
-                    // Pay cost(s) for Action
-                    _eventQueue.EnqueueEvents(ApplyActionCost(selectedAction, _actorChangeCalculator));
-
-                    // Apply effect(s) for Action
-                    _eventQueue.EnqueueEvents(ApplyActionEffect(selectedAction, _actorChangeCalculator));
+                    // Move dead/inactive actor to end of queue
+                    _initiativeQueue.Update(activeEntity.Id, -_initiativeQueue.InitiativeThreshold);
                 }
+                else
+                {
+                    IEnumerable<IAction> actorSelectedActions = _turnController.TakeTurn(
+                        activeEntity,
+                        _controllerByPartyId[activeEntity.Party],
+                        _allTargets,
+                        _standardActionGenerator);
+                    foreach (IAction selectedAction in actorSelectedActions)
+                    {
+                        // Inform event queue we're applying an action
+                        _eventQueue.EnqueueEvent(new ActorActionTakenEvent(activeEntity.Id, selectedAction));
 
-                // Update active entity's initiative value in the queue
-                _initiativeQueue.Update(activeEntity, initiativeReduction);
+                        // Pay cost(s) for Action
+                        _eventQueue.EnqueueEvents(ApplyActionCost(selectedAction, _actorChangeCalculator));
+
+                        // Apply effect(s) for Action
+                        _eventQueue.EnqueueEvents(ApplyActionEffect(selectedAction, _actorChangeCalculator));
+
+                        // Update active entity's initiative value
+                        _initiativeQueue.Update(activeEntity.Id, -selectedAction.Speed);
+                    }
+                }
 
                 // Rest for a bit
                 Thread.Sleep(ACTOR_CHANGE_SLEEP_TIME);
             }
 
             return winningParty;
-        }
-
-        private IAction SendActionsAndWaitForResponse(
-            IInitiativeActor activeEntity,
-            ICharacterController activeController,
-            IReadOnlyDictionary<uint, IAction> availableActions)
-        {
-            IAction selectedAction;
-            do
-            {
-                // Send Actions to Controller
-                _pendingSelectedActionId = null;
-                activeController.SelectAction(activeEntity, availableActions, OnActionSelected);
-
-                // Wait for Controller response
-                do
-                {
-                    Thread.Sleep(ACTION_REQUEST_SLEEP_TIME);
-                } while (!_pendingSelectedActionId.HasValue);
-
-                // Validate response
-                availableActions.TryGetValue(_pendingSelectedActionId.Value, out selectedAction);
-
-                _pendingSelectedActionId = null;
-
-            } while (selectedAction == null || !selectedAction.Available);
-
-            return selectedAction;
-        }
-
-        public void OnActionSelected(uint actionId)
-        {
-            _pendingSelectedActionId = actionId;
         }
 
         private static IEnumerable<ICombatEventData> ApplyActionCost(IAction selectedAction, IActorChangeCalculator actorChangeCalculator)

@@ -2,12 +2,14 @@ using SadPumpkin.Util.CombatEngine.Action;
 
 namespace SadPumpkin.Util.CombatEngine.Events
 {
-    public class ActorActionTakenEvent : ICombatEventData
+    public readonly struct ActorActionTakenEvent : ICombatEventData
     {
+        public readonly uint ActorId;
         public readonly IAction Action;
 
-        public ActorActionTakenEvent(IAction action)
+        public ActorActionTakenEvent(uint actorId, IAction action)
         {
+            ActorId = actorId;
             Action = action;
         }
     }

@@ -60,7 +60,7 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
         /// </summary>
         /// <param name="targetValue">Limit which Actors' initiative must exceed to become active.</param>
         /// <param name="actors">Collection of Actors to add to the queue.</param>
-        public InitiativeQueue(float targetValue, IReadOnlyCollection<IInitiativeActor> actors)
+        public InitiativeQueue(float targetValue, IEnumerable<IInitiativeActor> actors)
             : this(targetValue)
         {
             foreach (var actor in actors)
@@ -76,7 +76,7 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
         /// </summary>
         /// <param name="targetValue">Limit which Actors' initiative must exceed to become active.</param>
         /// <param name="actors">Collection of Actors and their starting initiative values to add to the queue.</param>
-        public InitiativeQueue(float targetValue, IReadOnlyCollection<(IInitiativeActor actor, float initialValue)> actors)
+        public InitiativeQueue(float targetValue, IEnumerable<(IInitiativeActor actor, float initialValue)> actors)
             : this(targetValue)
         {
             foreach (var actorTuple in actors)
@@ -93,6 +93,18 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
         public float InitiativeThreshold => _targetValue;
 
         /// <summary>
+        /// Get the current state of the initiative queue, in Actor-Initiative pairs.
+        /// </summary>
+        /// <returns>A collection of each actor and their current initiative.</returns>
+        public IEnumerable<(uint actorId, float initiative)> GetCurrentQueue()
+        {
+            foreach (InitPair initPair in _queue)
+            {
+                yield return (initPair.Actor.Id, initPair.Initiative);
+            }
+        }
+
+        /// <summary>
         /// Get the next Actor in initiative queue.
         /// </summary>
         /// <returns>The next Actor, or null if the collection is empty.</returns>
@@ -102,7 +114,7 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
                 return null;
 
             SortQueue(_queue);
-            if (_queue[0].Initiative < _targetValue)
+            while (_queue[0].Initiative < _targetValue)
                 IncrementQueue(_queue, _targetValue);
 
             return _queue[0].Actor;
@@ -127,37 +139,34 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
         }
 
         /// <summary>
-        /// Remove an Actor from the initiative queue.
+        /// Manually change an Actor's current initiative.
         /// </summary>
-        /// <param name="actor">Actor to remove from the queue.</param>
-        /// <returns><c>True</c> if the Actor was removed, otherwise <c>False</c>.</returns>
-        public bool Remove(IInitiativeActor actor)
+        /// <param name="actorId">Actor to change initiative of.</param>
+        /// <param name="changeValue">Amount to change Actor's current initiative by.</param>
+        public void Update(uint actorId, float changeValue)
         {
             for (int i = 0; i < _queue.Count; i++)
             {
-                if (_queue[i].Actor.Equals(actor))
+                if (_queue[i].Actor.Id == actorId)
                 {
-                    _queue.RemoveAt(i);
-                    return true;
+                    _queue[i].Initiative += changeValue;
+                    return;
                 }
             }
-
-            return false;
         }
 
         /// <summary>
-        /// Update an Actor's initiative value.
+        /// Remove an Actor from the initiative queue.
         /// </summary>
-        /// <param name="actor">Actor to update the initiative of.</param>
-        /// <param name="shift">Amount by which to update the Actor's initiative.</param>
-        /// <returns><c>True</c> if the Actor's initiative was updated, otherwise <c>False</c>.</returns>
-        public bool Update(IInitiativeActor actor, float shift)
+        /// <param name="actorId">Actor to remove from the queue.</param>
+        /// <returns><c>True</c> if the Actor was removed, otherwise <c>False</c>.</returns>
+        public bool Remove(uint actorId)
         {
             for (int i = 0; i < _queue.Count; i++)
             {
-                if (_queue[i].Actor.Equals(actor))
+                if (_queue[i].Actor.Id == actorId)
                 {
-                    _queue[i].Initiative += shift;
+                    _queue.RemoveAt(i);
                     return true;
                 }
             }
@@ -169,11 +178,9 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
         /// Generate a preview of the upcoming initiative order.
         /// </summary>
         /// <param name="previewLength">Number of initiative cycles to calculate.</param>
-        /// <returns>Collection of Actors in the order of their upcoming turns.</returns>
-        public IReadOnlyList<IInitiativeActor> GetPreview(int previewLength)
+        /// <returns>Collection of Actor ids in the order of their upcoming turns.</returns>
+        public IEnumerable<uint> GetPreview(int previewLength)
         {
-            List<IInitiativeActor> result = new List<IInitiativeActor>(previewLength);
-
             if (_queue.Count > 0)
             {
                 List<InitPair> tempQueue = _queue.ConvertAll(x => new InitPair(x));
@@ -182,12 +189,12 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
                     SortQueue(tempQueue);
                     while (tempQueue[0].Initiative < _targetValue)
                         IncrementQueue(tempQueue, _targetValue);
-                    result.Add(tempQueue[0].Actor);
+
+                    yield return tempQueue[0].Actor.Id;
+
                     tempQueue[0].Initiative -= _targetValue;
                 }
             }
-
-            return result;
         }
 
         /// <summary>

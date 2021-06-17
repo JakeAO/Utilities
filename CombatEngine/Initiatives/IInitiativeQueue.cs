@@ -12,7 +12,13 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
         /// Get this Queue's initiative threshold.
         /// </summary>
         float InitiativeThreshold { get; }
-        
+
+        /// <summary>
+        /// Get the current state of the initiative queue, in Actor-Initiative pairs.
+        /// </summary>
+        /// <returns>A collection of each actor and their current initiative.</returns>
+        IEnumerable<(uint actorId, float initiative)> GetCurrentQueue();
+
         /// <summary>
         /// Get the next Actor in initiative queue.
         /// </summary>
@@ -28,25 +34,24 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
         bool Add(IInitiativeActor actor, float initialValue);
 
         /// <summary>
+        /// Manually change an Actor's current initiative.
+        /// </summary>
+        /// <param name="actorId">Actor to change initiative of.</param>
+        /// <param name="changeValue">Amount to change Actor's current initiative by.</param>
+        void Update(uint actorId, float changeValue);
+        
+        /// <summary>
         /// Remove an Actor from the initiative queue.
         /// </summary>
-        /// <param name="actor">Actor to remove from the queue.</param>
+        /// <param name="actorId">Actor to remove from the queue.</param>
         /// <returns><c>True</c> if the Actor was removed, otherwise <c>False</c>.</returns>
-        bool Remove(IInitiativeActor actor);
-
-        /// <summary>
-        /// Update an Actor's initiative value.
-        /// </summary>
-        /// <param name="actor">Actor to update the initiative of.</param>
-        /// <param name="shift">Amount by which to update the Actor's initiative.</param>
-        /// <returns><c>True</c> if the Actor's initiative was updated, otherwise <c>False</c>.</returns>
-        bool Update(IInitiativeActor actor, float shift);
+        bool Remove(uint actorId);
 
         /// <summary>
         /// Generate a preview of the upcoming initiative order.
         /// </summary>
         /// <param name="previewLength">Number of initiative cycles to calculate.</param>
-        /// <returns>Collection of Actors in the order of their upcoming turns.</returns>
-        IReadOnlyList<IInitiativeActor> GetPreview(int previewLength);
+        /// <returns>Collection of Actor ids in the order of their upcoming turns.</returns>
+        IEnumerable<uint> GetPreview(int previewLength);
     }
 }

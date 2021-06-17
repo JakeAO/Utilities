@@ -44,6 +44,7 @@
     <ItemGroup>
         <Compile Include="CombatEngineTests.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="TestInitActor.cs" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\CombatEngine\CombatEngine.csproj">

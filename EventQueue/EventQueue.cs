@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
@@ -7,16 +8,41 @@ namespace SadPumpkin.Util.Events
     {
         private readonly ConcurrentQueue<IEventData> _eventQueue = new ConcurrentQueue<IEventData>();
 
-        public void EnqueueEvent(IEventData eventData) => _eventQueue.Enqueue(eventData);
+        public event Action<IEventData> EventEnqueued;
+        public event Action<IEventData> EventDequeued;
+
+        public void EnqueueEvent(IEventData eventData)
+        {
+            if (eventData != null)
+            {
+                _eventQueue.Enqueue(eventData);
+
+                EventEnqueued?.Invoke(eventData);
+            }
+        }
 
         public void EnqueueEvents(IEnumerable<IEventData> eventDatas)
         {
             foreach (IEventData eventData in eventDatas)
             {
-                _eventQueue.Enqueue(eventData);
+                if (eventData != null)
+                {
+                    _eventQueue.Enqueue(eventData);
+
+                    EventEnqueued?.Invoke(eventData);
+                }
             }
         }
 
-        public bool TryDequeueEvent(out IEventData eventData) => _eventQueue.TryDequeue(out eventData);
+        public bool TryDequeueEvent(out IEventData eventData)
+        {
+            if (_eventQueue.TryDequeue(out eventData))
+            {
+                EventDequeued?.Invoke(eventData);
+                return true;
+            }
+
+            return false;
+        }
     }
 }

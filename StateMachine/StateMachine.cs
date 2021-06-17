@@ -27,7 +27,7 @@ namespace SadPumpkin.Util.StateMachine
         {
             IState nextState = constructedState;
 
-            CurrentState.PerformTeardown(SharedContext, nextState);
+            CurrentState.PerformTeardown(nextState);
 
             SharedContext.Set(nextState);
 
@@ -37,7 +37,7 @@ namespace SadPumpkin.Util.StateMachine
 
             _stateChangedSignal.Fire(nextState);
 
-            CurrentState.PerformContent(SharedContext);
+            CurrentState.PerformContent();
         }
     }
 }

@@ -14,11 +14,11 @@ namespace SadPumpkin.Util.StateMachine.States
         {
         }
 
-        public void PerformContent(IContext context)
+        public void PerformContent()
         {
         }
 
-        public void PerformTeardown(IContext context, IState nextState)
+        public void PerformTeardown(IState nextState)
         {
         }
     }

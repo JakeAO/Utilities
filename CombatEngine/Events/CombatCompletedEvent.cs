@@ -1,6 +1,6 @@
 namespace SadPumpkin.Util.CombatEngine.Events
 {
-    public class CombatCompletedEvent : ICombatEventData
+    public readonly struct CombatCompletedEvent : ICombatEventData
     {
         public readonly uint WinningPartyId;
 

@@ -1,6 +1,6 @@
 namespace SadPumpkin.Util.CombatEngine.Events
 {
-    public class CombatStateChangedEvent : ICombatEventData
+    public readonly struct CombatStateChangedEvent : ICombatEventData
     {
         public readonly CombatState NewState;
 

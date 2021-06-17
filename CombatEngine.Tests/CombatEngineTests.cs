@@ -9,6 +9,7 @@ using SadPumpkin.Util.CombatEngine.CostCalculators;
 using SadPumpkin.Util.CombatEngine.EffectCalculators;
 using SadPumpkin.Util.CombatEngine.Initiatives;
 using SadPumpkin.Util.CombatEngine.Party;
+using SadPumpkin.Util.CombatEngine.TurnController;
 using SadPumpkin.Util.CombatEngine.WinningPartyCalculator;
 using SadPumpkin.Util.Events;
 
@@ -102,6 +103,7 @@ namespace SadPumpkin.Util.CombatEngine.Tests
                         }
                     },
                 },
+                new NullTurnController(),
                 new NullStandardActionGenerator(),
                 new AnyAliveWinningPartyCalculator(),
                 new NullActorChangeCalculator(),
@@ -145,6 +147,7 @@ namespace SadPumpkin.Util.CombatEngine.Tests
                         }
                     },
                 },
+                new NullTurnController(),
                 new NullStandardActionGenerator(),
                 new AnyAliveWinningPartyCalculator(),
                 new NullActorChangeCalculator(),
@@ -189,6 +192,7 @@ namespace SadPumpkin.Util.CombatEngine.Tests
                         }
                     },
                 },
+                new NullTurnController(),
                 new NullStandardActionGenerator(),
                 new AnyAliveWinningPartyCalculator(),
                 new NullActorChangeCalculator(),

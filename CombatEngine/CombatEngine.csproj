@@ -73,6 +73,9 @@
         <Compile Include="TargetCalculators\TargetSelf.cs" />
         <Compile Include="TargetCalculators\TargetSingleAlly.cs" />
         <Compile Include="TargetCalculators\TargetSingleEnemy.cs" />
+        <Compile Include="TurnController\ITurnController.cs" />
+        <Compile Include="TurnController\NullTurnController.cs" />
+        <Compile Include="TurnController\OneActionTurnController.cs" />
         <Compile Include="WinningPartyCalculator\AnyAliveWinningPartyCalculator.cs" />
         <Compile Include="WinningPartyCalculator\IWinningPartyCalculator.cs" />
     </ItemGroup>

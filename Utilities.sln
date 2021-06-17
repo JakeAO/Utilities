@@ -40,6 +40,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UXEventQueue", "UXEventQueu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UXEventQueue.Tests", "UXEventQueue.Tests\UXEventQueue.Tests.csproj", "{5917D633-7656-4CBD-A5AF-B59941C7EB08}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectPool", "ObjectPool\ObjectPool.csproj", "{0ACDCDA0-1C98-4963-8587-CE0471488C85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectPool.Tests", "ObjectPool.Tests\ObjectPool.Tests.csproj", "{C4FEA688-168D-439B-BA52-AD146EDF9964}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -126,5 +130,13 @@ Global
 		{5917D633-7656-4CBD-A5AF-B59941C7EB08}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5917D633-7656-4CBD-A5AF-B59941C7EB08}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5917D633-7656-4CBD-A5AF-B59941C7EB08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0ACDCDA0-1C98-4963-8587-CE0471488C85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0ACDCDA0-1C98-4963-8587-CE0471488C85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0ACDCDA0-1C98-4963-8587-CE0471488C85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0ACDCDA0-1C98-4963-8587-CE0471488C85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4FEA688-168D-439B-BA52-AD146EDF9964}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4FEA688-168D-439B-BA52-AD146EDF9964}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4FEA688-168D-439B-BA52-AD146EDF9964}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4FEA688-168D-439B-BA52-AD146EDF9964}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
