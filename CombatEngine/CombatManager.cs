@@ -64,7 +64,7 @@ namespace SadPumpkin.Util.CombatEngine
             _standardActionGenerator = standardActionGenerator ?? new NullStandardActionGenerator();
             _winningPartyCalculator = winningPartyCalculator ?? new AnyAliveWinningPartyCalculator();
             _actorChangeCalculator = actorChangeCalculator ?? new NullActorChangeCalculator();
-            _initiativeQueue = initiativeQueue ?? new InitiativeQueue(100f);
+            _initiativeQueue = initiativeQueue ?? new InitiativeQueue(100);
             _eventQueue = eventQueue ?? new EventQueue();
 
             _parties.AddRange(parties);
@@ -127,7 +127,7 @@ namespace SadPumpkin.Util.CombatEngine
                 if (!activeEntity.IsAlive())
                 {
                     // Move dead/inactive actor to end of queue
-                    _initiativeQueue.Update(activeEntity.Id, -_initiativeQueue.InitiativeThreshold);
+                    _initiativeQueue.Update(activeEntity.Id, _initiativeQueue.InitiativeThreshold);
                 }
                 else
                 {
@@ -148,7 +148,7 @@ namespace SadPumpkin.Util.CombatEngine
                         _eventQueue.EnqueueEvents(ApplyActionEffect(selectedAction, _actorChangeCalculator));
 
                         // Update active entity's initiative value
-                        _initiativeQueue.Update(activeEntity.Id, -selectedAction.Speed);
+                        _initiativeQueue.Update(activeEntity.Id, selectedAction.Speed);
                     }
                 }
 

@@ -11,7 +11,7 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
         /// <summary>
         /// Get this Queue's initiative threshold.
         /// </summary>
-        float InitiativeThreshold { get; }
+        uint InitiativeThreshold { get; }
 
         /// <summary>
         /// Get the current state of the initiative queue, in Actor-Initiative pairs.
@@ -38,7 +38,7 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
         /// </summary>
         /// <param name="actorId">Actor to change initiative of.</param>
         /// <param name="changeValue">Amount to change Actor's current initiative by.</param>
-        void Update(uint actorId, float changeValue);
+        void Update(uint actorId, uint changeValue);
         
         /// <summary>
         /// Remove an Actor from the initiative queue.

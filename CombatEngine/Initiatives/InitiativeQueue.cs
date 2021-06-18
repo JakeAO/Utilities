@@ -43,14 +43,14 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
 
         private static readonly Random RANDOM = new Random();
 
-        private readonly float _targetValue = 100f;
+        private readonly uint _targetValue = 100;
         private readonly List<InitPair> _queue = new List<InitPair>();
 
         /// <summary>
         /// Construct a new, empty queue.
         /// </summary>
         /// <param name="targetValue">Limit which Actors' initiative must exceed to become active.</param>
-        public InitiativeQueue(float targetValue)
+        public InitiativeQueue(uint targetValue)
         {
             _targetValue = targetValue;
         }
@@ -60,7 +60,7 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
         /// </summary>
         /// <param name="targetValue">Limit which Actors' initiative must exceed to become active.</param>
         /// <param name="actors">Collection of Actors to add to the queue.</param>
-        public InitiativeQueue(float targetValue, IEnumerable<IInitiativeActor> actors)
+        public InitiativeQueue(uint targetValue, IEnumerable<IInitiativeActor> actors)
             : this(targetValue)
         {
             foreach (var actor in actors)
@@ -76,7 +76,7 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
         /// </summary>
         /// <param name="targetValue">Limit which Actors' initiative must exceed to become active.</param>
         /// <param name="actors">Collection of Actors and their starting initiative values to add to the queue.</param>
-        public InitiativeQueue(float targetValue, IEnumerable<(IInitiativeActor actor, float initialValue)> actors)
+        public InitiativeQueue(uint targetValue, IEnumerable<(IInitiativeActor actor, float initialValue)> actors)
             : this(targetValue)
         {
             foreach (var actorTuple in actors)
@@ -90,7 +90,7 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
         /// <summary>
         /// Get this Queue's initiative threshold.
         /// </summary>
-        public float InitiativeThreshold => _targetValue;
+        public uint InitiativeThreshold => _targetValue;
 
         /// <summary>
         /// Get the current state of the initiative queue, in Actor-Initiative pairs.
@@ -115,7 +115,7 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
 
             SortQueue(_queue);
             while (_queue[0].Initiative < _targetValue)
-                IncrementQueue(_queue, _targetValue);
+                IncrementQueue(_queue);
 
             return _queue[0].Actor;
         }
@@ -143,13 +143,13 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
         /// </summary>
         /// <param name="actorId">Actor to change initiative of.</param>
         /// <param name="changeValue">Amount to change Actor's current initiative by.</param>
-        public void Update(uint actorId, float changeValue)
+        public void Update(uint actorId, uint changeValue)
         {
             for (int i = 0; i < _queue.Count; i++)
             {
                 if (_queue[i].Actor.Id == actorId)
                 {
-                    _queue[i].Initiative += changeValue;
+                    _queue[i].Initiative -= changeValue;
                     return;
                 }
             }
@@ -188,7 +188,7 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
                 {
                     SortQueue(tempQueue);
                     while (tempQueue[0].Initiative < _targetValue)
-                        IncrementQueue(tempQueue, _targetValue);
+                        IncrementQueue(tempQueue);
 
                     yield return tempQueue[0].Actor.Id;
 
@@ -201,34 +201,14 @@ namespace SadPumpkin.Util.CombatEngine.Initiatives
         /// Increment the provided queue until an active Actor can be determined.
         /// </summary>
         /// <param name="queue">Queue to update.</param>
-        /// <param name="targetValue">Target initiative value which Actors must meet.</param>
-        private static void IncrementQueue(List<InitPair> queue, float targetValue)
+        private static void IncrementQueue(List<InitPair> queue)
         {
             if (queue.Count == 0)
                 return;
 
-            bool incrementRequired = true;
-
-            // Determine if we need to go through the increment process at all
             for (int i = 0; i < queue.Count; i++)
             {
-                if (queue[i].Initiative >= targetValue)
-                {
-                    incrementRequired = false;
-                    break;
-                }
-            }
-
-            // Continue incrementing the queue until we have at least one initiative above the target
-            while (incrementRequired)
-            {
-                for (int i = 0; i < queue.Count; i++)
-                {
-                    queue[i].Initiative += Math.Max(1, queue[i].Actor.GetInitiative());
-
-                    if (queue[i].Initiative >= targetValue)
-                        incrementRequired = false;
-                }
+                queue[i].Initiative += Math.Max(1, queue[i].Actor.GetInitiative());
             }
 
             SortQueue(queue);
