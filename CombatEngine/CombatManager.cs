@@ -76,7 +76,7 @@ namespace SadPumpkin.Util.CombatEngine
                     if (actor is ITargetableActor targetableActor)
                         _allTargets.Add(targetableActor);
 
-                    float startingInitiative = (float) RANDOM.NextDouble() * _initiativeQueue.InitiativeThreshold * 90f;
+                    float startingInitiative = (float) (RANDOM.NextDouble() * _initiativeQueue.InitiativeThreshold * 0.5f);
                     _initiativeQueue.Add(actor, startingInitiative);
                 }
             }
@@ -138,6 +138,9 @@ namespace SadPumpkin.Util.CombatEngine
                         _standardActionGenerator);
                     foreach (IAction selectedAction in actorSelectedActions)
                     {
+                        // Update active entity's initiative value
+                        _initiativeQueue.Update(activeEntity.Id, selectedAction.Speed);
+                        
                         // Inform event queue we're applying an action
                         _eventQueue.EnqueueEvent(new ActorActionTakenEvent(activeEntity.Id, selectedAction));
 
@@ -146,9 +149,6 @@ namespace SadPumpkin.Util.CombatEngine
 
                         // Apply effect(s) for Action
                         _eventQueue.EnqueueEvents(ApplyActionEffect(selectedAction, _actorChangeCalculator));
-
-                        // Update active entity's initiative value
-                        _initiativeQueue.Update(activeEntity.Id, selectedAction.Speed);
                     }
                 }
 
@@ -175,7 +175,7 @@ namespace SadPumpkin.Util.CombatEngine
         {
             // Pre-apply copies
             IInitiativeActor sourceBeforeEffect = selectedAction.Source.Copy();
-            IEnumerable<IInitiativeActor> targetsBeforeEffect = selectedAction.Targets.Select(t => t.Copy());
+            IReadOnlyList<IInitiativeActor> targetsBeforeEffect = selectedAction.Targets.Select(t => t.Copy()).ToArray();
 
             // Apply
             selectedAction.Effect.Apply(selectedAction.Source, selectedAction.Targets);

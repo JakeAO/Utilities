@@ -1,3 +1,4 @@
+using System.Linq;
 using NUnit.Framework;
 using SadPumpkin.Util.CombatEngine.Actor;
 using SadPumpkin.Util.CombatEngine.Initiatives;
@@ -33,7 +34,7 @@ namespace SadPumpkin.Util.CombatEngine.Tests
                 queue.Update(nextActor.Id, 100);
             }
         }
-        
+
         [Test]
         public void actors_take_turns_in_order()
         {
@@ -54,6 +55,39 @@ namespace SadPumpkin.Util.CombatEngine.Tests
                 queue.Update(nextActor.Id, 100);
 
                 Assert.AreEqual(expectedActor.Id, nextActor.Id);
+            }
+        }
+
+        [Test]
+        public void preview_is_accurate()
+        {
+            var actors = new (IInitiativeActor actor, float initialValue)[]
+            {
+                (new TestInitActor() {Init = 10, Id = 0}, 4f),
+                (new TestInitActor() {Init = 10, Id = 1}, 3f),
+                (new TestInitActor() {Init = 10, Id = 2}, 2f),
+                (new TestInitActor() {Init = 10, Id = 3}, 1f),
+                (new TestInitActor() {Init = 10, Id = 4}, 0f)
+            };
+            IInitiativeQueue queue = new InitiativeQueue(100, actors);
+
+            for (int i = 0; i < 1000; i++)
+            {
+                int expectedFirstIdx = i % 5;
+
+                uint[] previewActorIds = queue.GetPreview(10).ToArray();
+
+                IInitiativeActor expectedActor = actors[i % 5].actor;
+                Assert.AreEqual(expectedActor.Id, previewActorIds[0]);
+
+                for (int j = 0; j < 10; j++)
+                {
+                    IInitiativeActor expectedPreview = actors[(expectedFirstIdx + j) % 5].actor;
+                    Assert.AreEqual(expectedPreview.Id, previewActorIds[j]);
+                }
+
+                IInitiativeActor nextActor = queue.GetNext();
+                queue.Update(nextActor.Id, 100);
             }
         }
     }
