@@ -17,8 +17,8 @@ namespace SadPumpkin.Util.StateMachine
             _stateChangedSignal = stateChangedSignal ?? new StateChanged();
 
             SharedContext = sharedContext;
-            SharedContext.Set(this);
-            SharedContext.Set(_stateChangedSignal, overwrite: false);
+            SharedContext.SetValue(this);
+            SharedContext.SetValue(_stateChangedSignal, overwrite: false);
         }
 
         public void ChangeState<T>() where T : IState, new() => ChangeState(new T());
@@ -29,7 +29,7 @@ namespace SadPumpkin.Util.StateMachine
 
             CurrentState.PerformTeardown(nextState);
 
-            SharedContext.Set(nextState);
+            SharedContext.SetValue(nextState);
 
             nextState.PerformSetup(SharedContext, CurrentState);
 

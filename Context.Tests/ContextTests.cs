@@ -6,6 +6,18 @@ namespace SadPumpkin.Util.Context.Tests
     [TestFixture]
     public class ContextTests
     {
+        private class IListProvider : IValueProvider<IList>
+        {
+            private readonly IList _theList;
+
+            public IListProvider(IList theList)
+            {
+                _theList = theList;
+            }
+
+            public IList Get() => _theList;
+        }
+
         [Test]
         public void Get_Returns_Null_When_Empty()
         {
@@ -17,35 +29,13 @@ namespace SadPumpkin.Util.Context.Tests
         }
 
         [Test]
-        public void Get_Returns_Null_With_Key_When_Empty()
-        {
-            IContext context = new Context();
-
-            IList result = context.Get<IList>("testKey");
-
-            Assert.IsNull(result);
-        }
-
-        [Test]
         public void Get_Returns_Same_Object()
         {
             IList newList = new ArrayList();
             IContext context = new Context();
-            context.Set(newList);
+            context.SetValue(newList);
 
             IList result = context.Get<IList>();
-
-            Assert.AreSame(newList, result);
-        }
-
-        [Test]
-        public void Get_Returns_Same_Object_With_Key()
-        {
-            IList newList = new ArrayList();
-            IContext context = new Context();
-            context.Set(newList, "testKey");
-
-            IList result = context.Get<IList>("testKey");
 
             Assert.AreSame(newList, result);
         }
@@ -55,7 +45,7 @@ namespace SadPumpkin.Util.Context.Tests
         {
             IList newList = new ArrayList();
             IContext baseContext = new Context();
-            baseContext.Set(newList);
+            baseContext.SetValue(newList);
 
             IContext context = new Context(baseContext);
 
@@ -65,15 +55,16 @@ namespace SadPumpkin.Util.Context.Tests
         }
 
         [Test]
-        public void Get_Returns_Same_Object_From_Base_With_Key()
+        public void Get_Returns_Value_From_Provider()
         {
             IList newList = new ArrayList();
-            IContext baseContext = new Context();
-            baseContext.Set(newList, "testKey");
+            IListProvider provider = new IListProvider(newList);
+            IContext context = new Context();
+            context.SetProvider(provider);
 
-            IContext context = new Context(baseContext);
+            Assert.AreSame(newList, provider.Get());
 
-            IList result = context.Get<IList>("testKey");
+            IList result = context.Get<IList>();
 
             Assert.AreSame(newList, result);
         }
@@ -83,7 +74,7 @@ namespace SadPumpkin.Util.Context.Tests
         {
             IList newList = new ArrayList();
             IContext context = new Context();
-            context.Set(newList);
+            context.SetValue(newList);
 
             context.Clear();
             IList result = context.Get<IList>();
@@ -92,13 +83,29 @@ namespace SadPumpkin.Util.Context.Tests
         }
 
         [Test]
+        public void Clear_Removes_All_Providers()
+        {
+            IList newList = new ArrayList();
+            IListProvider provider = new IListProvider(newList);
+            IContext context = new Context();
+            context.SetValue(newList);
+            context.SetProvider(provider);
+
+            Assert.IsNotNull(context.Get<IList>());
+
+            context.Clear(true);
+
+            Assert.IsNull(context.Get<IList>());
+        }
+
+        [Test]
         public void Clear_Type_Removes_All_Values_Of_Type()
         {
             ArrayList array = new ArrayList();
             IList list = array;
             IContext context = new Context();
-            context.Set(array);
-            context.Set(list);
+            context.SetValue(array);
+            context.SetValue(list);
 
             context.Clear<IList>();
             IList listResult = context.Get<IList>();
@@ -109,19 +116,22 @@ namespace SadPumpkin.Util.Context.Tests
         }
 
         [Test]
-        public void Clear_Key_Removes_Value_At_Key()
+        public void Clear_Type_Removes_All_Values_Of_Type_And_Provider()
         {
-            IList list = new ArrayList();
+            ArrayList array = new ArrayList();
+            IList list = array;
+            IListProvider provider = new IListProvider(list);
             IContext context = new Context();
-            context.Set(list, "testKey1");
-            context.Set(list, "testKey2");
+            context.SetValue(array);
+            context.SetValue(list);
+            context.SetProvider(provider);
 
-            context.Clear<IList>("testKey1");
-            IList listResult1 = context.Get<IList>("testKey1");
-            IList listResult2 = context.Get<IList>("testKey2");
+            Assert.IsNotNull(context.Get<IList>());
 
-            Assert.IsNull(listResult1);
-            Assert.NotNull(listResult2);
+            context.Clear<IList>(true);
+
+            Assert.IsNull(context.Get<IList>());
+            Assert.IsNotNull(context.Get<ArrayList>());
         }
     }
 }

@@ -5,38 +5,40 @@ namespace SadPumpkin.Util.Context
 {
     public class Context : IContext
     {
-        private const string NIL = "NIL";
-
         private readonly IContext _baseContext = null;
-        private readonly Dictionary<Type, Dictionary<string, object>> _data = new Dictionary<Type, Dictionary<string, object>>();
+
+        private readonly Dictionary<Type, object> _providers = new Dictionary<Type, object>(10);
+        private readonly Dictionary<Type, object> _data = new Dictionary<Type, object>(10);
 
         public Context(IContext baseContext = null)
         {
             _baseContext = baseContext;
         }
 
-        public T Get<T>(string key = NIL)
-        {
-            return TryGet(out T value, key) ? value : default;
-        }
+        public T Get<T>() => TryGet(out T value) ? value : default;
 
-        public bool TryGet<T>(out T value, string key = NIL)
+        public bool TryGet<T>(out T value)
         {
             value = default;
 
-            if (string.IsNullOrWhiteSpace(key))
-                key = NIL;
-
-            if (_data.TryGetValue(typeof(T), out var keyDict) &&
-                keyDict.TryGetValue(key, out var objVal) &&
+            if (_data.TryGetValue(typeof(T), out var objVal) &&
                 objVal is T typedVal)
             {
                 value = typedVal;
                 return true;
             }
 
+            if (_providers.TryGetValue(typeof(T), out var provider) &&
+                provider is IValueProvider<T> typedProvider &&
+                typedProvider.Get() is T providedVal)
+            {
+                _data[typeof(T)] = providedVal;
+                value = providedVal;
+                return true;
+            }
+
             if (_baseContext != null &&
-                _baseContext.TryGet(out T valueFromBase, key))
+                _baseContext.TryGet(out T valueFromBase))
             {
                 value = valueFromBase;
                 return true;
@@ -45,42 +47,34 @@ namespace SadPumpkin.Util.Context
             return false;
         }
 
-        public void Set<T>(T value, string key = NIL, bool overwrite = true)
+        public void SetProvider<T>(IValueProvider<T> valueProvider)
         {
-            if (EqualityComparer<T>.Default.Equals(value, default))
-                return;
+            Type valueType = valueProvider.GetType().GetInterfaceMap(typeof(IValueProvider<T>)).InterfaceType.GenericTypeArguments[0];
 
-            if (string.IsNullOrWhiteSpace(key))
-                key = NIL;
-
-            if (!_data.TryGetValue(typeof(T), out var keyDict))
-                _data[typeof(T)] = keyDict = new Dictionary<string, object>();
-
-            if (!overwrite && keyDict.TryGetValue(key, out var testValue) && testValue != default)
-                return;
-
-            keyDict[key] = value;
+            _providers[valueType] = valueProvider;
         }
 
-        public void Clear()
+        public void SetValue<T>(T value)
+        {
+            _data[typeof(T)] = value;
+        }
+
+        public void Clear(bool includeProviders = false)
         {
             _data.Clear();
+            if (includeProviders)
+            {
+                _providers.Clear();
+            }
         }
 
-        public void Clear<T>()
+        public void Clear<T>(bool includeProvider = false)
         {
             _data.Remove(typeof(T));
-        }
-
-        public void Clear<T>(string key)
-        {
-            if (string.IsNullOrWhiteSpace(key))
-                key = NIL;
-
-            if (!_data.TryGetValue(typeof(T), out var keyDict))
-                return;
-
-            keyDict.Remove(key);
+            if (includeProvider)
+            {
+                _providers.Remove(typeof(T));
+            }
         }
     }
 }

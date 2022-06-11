@@ -2,13 +2,13 @@
 {
     public interface IContext
     {
-        T Get<T>(string key = null);
-        bool TryGet<T>(out T value, string key = null);
-        
-        void Set<T>(T value, string key = null, bool overwrite = true);
+        T Get<T>();
+        bool TryGet<T>(out T value);
 
-        void Clear();
-        void Clear<T>();
-        void Clear<T>(string key);
+        void SetProvider<T>(IValueProvider<T> valueProvider);
+        void SetValue<T>(T value);
+
+        void Clear(bool includeProviders = false);
+        void Clear<T>(bool includeProvider = false);
     }
 }
