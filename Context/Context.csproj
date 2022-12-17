@@ -40,7 +40,9 @@
     <ItemGroup>
         <Compile Include="Context.cs" />
         <Compile Include="IContext.cs" />
+        <Compile Include="IMutableContext.cs" />
         <Compile Include="IValueProvider.cs" />
+        <Compile Include="MutableContext.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

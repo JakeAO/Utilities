@@ -1,4 +1,5 @@
-﻿using SadPumpkin.Util.Context;
+﻿using System;
+using SadPumpkin.Util.Context;
 using SadPumpkin.Util.Signals;
 using SadPumpkin.Util.StateMachine.Signals;
 using SadPumpkin.Util.StateMachine.States;
@@ -16,9 +17,13 @@ namespace SadPumpkin.Util.StateMachine
         {
             _stateChangedSignal = stateChangedSignal ?? new StateChanged();
 
-            SharedContext = sharedContext;
-            SharedContext.SetValue(this);
-            SharedContext.SetValue(_stateChangedSignal);
+            SharedContext = new Context.Context(
+                sharedContext,
+                new (Type, object)[]
+                {
+                    (typeof(StateMachine), this),
+                    (typeof(StateChanged), _stateChangedSignal),
+                });
         }
 
         public void ChangeState<T>() where T : IState, new() => ChangeState(new T());
@@ -29,9 +34,14 @@ namespace SadPumpkin.Util.StateMachine
 
             CurrentState.PerformTeardown(nextState);
 
-            SharedContext.SetValue(nextState);
+            IContext stateContext = new Context.Context(
+                SharedContext,
+                new (Type, object)[]
+                {
+                    (typeof(T), constructedState),
+                });
 
-            nextState.PerformSetup(SharedContext, CurrentState);
+            nextState.PerformSetup(stateContext, CurrentState);
 
             CurrentState = nextState;
 
