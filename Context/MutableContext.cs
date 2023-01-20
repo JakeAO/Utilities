@@ -1,9 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace SadPumpkin.Util.Context
 {
     public class MutableContext : Context, IMutableContext
     {
+        public MutableContext(
+            IContext baseContext = null,
+            IEnumerable<(Type, object)> providers = null,
+            IEnumerable<(Type, object)> data = null)
+            : base(baseContext, providers, data)
+        {
+
+        }
+
         public void SetProvider<T>(IValueProvider<T> valueProvider)
         {
             Type valueType = valueProvider.GetType().GetInterfaceMap(typeof(IValueProvider<T>)).InterfaceType.GenericTypeArguments[0];

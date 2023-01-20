@@ -8,8 +8,8 @@ namespace SadPumpkin.Util.Context
     {
         private readonly IContext _baseContext = null;
 
-        protected readonly Dictionary<Type, object> _providers = new Dictionary<Type, object>(10);
-        protected readonly Dictionary<Type, object> _data = new Dictionary<Type, object>(10);
+        protected readonly Dictionary<Type, object> _providers = new Dictionary<Type, object>(2);
+        protected readonly Dictionary<Type, object> _data = new Dictionary<Type, object>(2);
 
         public Context(
             IContext baseContext = null,
