@@ -43,6 +43,10 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="SignalT1Tests.cs" />
+        <Compile Include="SignalT2Tests.cs" />
+        <Compile Include="SignalT3Tests.cs" />
+        <Compile Include="SignalTests.cs" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\Signals\Signals.csproj">

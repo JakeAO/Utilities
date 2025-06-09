@@ -1,116 +1,161 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace SadPumpkin.Util.Signals
 {
     /// <summary>
-    /// Abstract implementation of a parameterless signal.
+    /// Abstract implementation of a parameterless signal with thread safety and error handling.
     /// </summary>
     public abstract class Signal : ISignal
     {
-        protected event Action EventHandlers;
-
         /// <summary>
-        /// Send the signal to all listeners.
+        /// Lock object for thread synchronization
         /// </summary>
-        public void Fire() => EventHandlers?.Invoke();
-
+        private readonly object _lock = new object();
+        
         /// <summary>
-        /// Add a listener to the signal.
+        /// Collection of event handlers for this signal
         /// </summary>
-        /// <param name="callback">Event called when the signal is fired.</param>
-        public void Listen(Action callback) => EventHandlers += callback;
-
+        private readonly List<Action> _handlers = new List<Action>();
+        
         /// <summary>
-        /// Remove a listener from the signal.
+        /// Reusable list for invoking handlers to avoid GC allocation
         /// </summary>
-        /// <param name="callback">Event called when the signal is fired.</param>
-        public void Unlisten(Action callback) => EventHandlers -= callback;
-    }
-
-    /// <summary>
-    /// Abstract implementation of a signal with one generic parameter.
-    /// </summary>
-    /// <typeparam name="T">Type of the parameter.</typeparam>
-    public abstract class Signal<T> : ISignal<T>
-    {
-        protected event Action<T> EventHandlers;
-
+        private readonly List<Action> _invocationList = new List<Action>();
+        
         /// <summary>
-        /// Send the signal to all listeners.
+        /// Flag indicating whether the signal is currently being fired
         /// </summary>
-        /// <param name="value">First parameter.</param>
-        public void Fire(T val) => EventHandlers?.Invoke(val);
-
+        private bool _isFiring;
+        
         /// <summary>
-        /// Add a listener to the signal.
+        /// Pending handlers to be added after firing completes
         /// </summary>
-        /// <param name="callback">Event called when the signal is fired.</param>
-        public void Listen(Action<T> callback) => EventHandlers += callback;
-
+        private readonly List<Action> _pendingAdd = new List<Action>();
+        
         /// <summary>
-        /// Remove a listener from the signal.
+        /// Pending handlers to be removed after firing completes
         /// </summary>
-        /// <param name="callback">Event called when the signal is fired.</param>
-        public void Unlisten(Action<T> callback) => EventHandlers -= callback;
-    }
-
-    /// <summary>
-    /// Abstract implementation of a signal with two generic parameters.
-    /// </summary>
-    /// <typeparam name="T">Type of the first parameter.</typeparam>
-    /// <typeparam name="TU">Type of the second parameter.</typeparam>
-    public abstract class Signal<T1, T2> : ISignal<T1, T2>
-    {
-        protected event Action<T1, T2> EventHandlers;
+        private readonly List<Action> _pendingRemove = new List<Action>();
 
         /// <summary>
-        /// Send the signal to all listeners.
+        /// Send the signal to all listeners with thread safety and error handling.
+        /// Zero allocation implementation.
         /// </summary>
-        /// <param name="value1">First parameter.</param>
-        /// <param name="value2">Second parameter.</param>
-        public void Fire(T1 val1, T2 val2) => EventHandlers?.Invoke(val1, val2);
+        public void Fire()
+        {
+            // Lock during the copy process to ensure consistency
+            lock (_lock)
+            {
+                _isFiring = true;
+                
+                // Clear the invocation list and copy all handlers (no allocation)
+                _invocationList.Clear();
+                _invocationList.AddRange(_handlers);
+            }
+
+            // Invoke each handler outside the lock to prevent deadlocks
+            int count = _invocationList.Count;
+            for (int i = 0; i < count; i++)
+            {
+                Action handler = _invocationList[i];
+                try
+                {
+                    handler?.Invoke();
+                }
+                catch (Exception ex)
+                {
+                    // Log exception but continue processing other handlers
+                    HandleException(ex);
+                }
+            }
+
+            // Process pending handler changes after invocation is complete
+            ProcessPendingChanges();
+        }
 
         /// <summary>
-        /// Add a listener to the signal.
-        /// </summary>
-        /// <param name="callback">Event called when the signal is fired.</param>
-        public void Listen(Action<T1, T2> callback) => EventHandlers += callback;
-
-        /// <summary>
-        /// Remove a listener from the signal.
+        /// Add a listener to the signal in a thread-safe manner.
         /// </summary>
         /// <param name="callback">Event called when the signal is fired.</param>
-        public void Unlisten(Action<T1, T2> callback) => EventHandlers -= callback;
-    }
-
-    /// <summary>
-    /// Abstract implementation of a signal with three generic parameters.
-    /// </summary>
-    /// <typeparam name="T">Type of the first parameter.</typeparam>
-    /// <typeparam name="TU">Type of the second parameter.</typeparam>
-    /// <typeparam name="TV">Type of the third parameter.</typeparam>
-    public abstract class Signal<T1, T2, T3> : ISignal<T1, T2, T3>
-    {
-        protected event Action<T1, T2, T3> EventHandlers;
-
-        /// <summary>
-        /// Send the signal to all listeners.
-        /// </summary>
-        /// <param name="value1">First parameter.</param>
-        /// <param name="value2">Second parameter.</param>
-        /// <param name="value3">Third parameter.</param>
-        public void Fire(T1 val1, T2 val2, T3 val3) => EventHandlers?.Invoke(val1, val2, val3);
+        public void Listen(Action callback)
+        {
+            if (callback == null)
+                return;
+                
+            lock (_lock)
+            {
+                if (_isFiring)
+                {
+                    // Queue the addition for after the signal completes firing
+                    _pendingAdd.Add(callback);
+                }
+                else
+                {
+                    _handlers.Add(callback);
+                }
+            }
+        }
 
         /// <summary>
-        /// Add a listener to the signal.
+        /// Remove a listener from the signal in a thread-safe manner.
         /// </summary>
         /// <param name="callback">Event called when the signal is fired.</param>
-        public void Listen(Action<T1, T2, T3> callback) => EventHandlers += callback;
-
+        public void Unlisten(Action callback)
+        {
+            if (callback == null)
+                return;
+                
+            lock (_lock)
+            {
+                if (_isFiring)
+                {
+                    // Queue the removal for after the signal completes firing
+                    _pendingRemove.Add(callback);
+                }
+                else
+                {
+                    _handlers.Remove(callback);
+                }
+            }
+        }
+        
         /// <summary>
-        /// Remove a listener from the signal.
+        /// Process any pending handler additions or removals.
         /// </summary>
-        /// <param name="callback">Event called when the signal is fired.</param>
-        public void Unlisten(Action<T1, T2, T3> callback) => EventHandlers -= callback;
+        private void ProcessPendingChanges()
+        {
+            lock (_lock)
+            {
+                _isFiring = false;
+                
+                // Process all pending removes
+                foreach (var handler in _pendingRemove)
+                {
+                    _handlers.Remove(handler);
+                }
+                _pendingRemove.Clear();
+                
+                // Process all pending adds
+                foreach (var handler in _pendingAdd)
+                {
+                    _handlers.Add(handler);
+                }
+                _pendingAdd.Clear();
+            }
+        }
+        
+        /// <summary>
+        /// Handle exceptions that occur during event invocation.
+        /// Override this method to implement custom exception handling.
+        /// </summary>
+        /// <param name="ex">The exception that occurred.</param>
+        protected virtual void HandleException(Exception ex)
+        {
+            // Default implementation simply logs to console
+            // Can be overridden by derived classes for custom handling
+            Console.WriteLine($"Exception in signal handler: {ex.Message}");
+        }
     }
 }

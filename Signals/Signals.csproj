@@ -39,8 +39,14 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="ISignal.cs" />
+        <Compile Include="ISignal1.cs" />
+        <Compile Include="ISignal2.cs" />
+        <Compile Include="ISignal3.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="Signal.cs" />
+        <Compile Include="Signal1.cs" />
+        <Compile Include="Signal2.cs" />
+        <Compile Include="Signal3.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
